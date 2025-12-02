@@ -1,0 +1,237 @@
+.submitEntry {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.container {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 60px 40px;
+  box-shadow: 0px 10px 40px -5px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.heading {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+.subheading {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  line-height: 24px;
+}
+
+.selectionBox {
+  position: relative;
+  width: 100%;
+}
+
+.selectButton {
+  width: 100%;
+  padding: 16px 20px;
+  background-color: #6b7280;
+  border: 2px solid #6b7280;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.selectButton:hover {
+  background-color: #5a6370;
+  border-color: #5a6370;
+}
+
+.selectText {
+  font-size: 18px;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.selectArrow {
+  font-size: 16px;
+  color: #ffffff;
+  transition: transform 0.3s ease;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  z-index: 10;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.option {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #e5e7eb;
+  font-family: 'Poppins', sans-serif;
+}
+
+.option:last-child {
+  border-bottom: none;
+}
+
+.option:hover {
+  background-color: #f3f4f6;
+}
+
+.option.selected {
+  background-color: #eff6ff;
+}
+
+.optionIcon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.optionLabel {
+  font-size: 18px;
+  color: #111827;
+  font-weight: 500;
+}
+
+.nextButton {
+  background-color: #f97316;
+  color: #ffffff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 24px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nextButton:hover {
+  background-color: #ea580c;
+}
+
+.nextButton:active {
+  background-color: #d94d00;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 40px 30px;
+    gap: 24px;
+  }
+
+  .heading {
+    font-size: 26px;
+  }
+
+  .subheading {
+    font-size: 14px;
+  }
+
+  .selectButton {
+    padding: 14px 16px;
+  }
+
+  .selectText {
+    font-size: 16px;
+  }
+
+  .option {
+    padding: 14px 16px;
+  }
+
+  .optionLabel {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mainContent {
+    padding: 20px 16px;
+  }
+
+  .container {
+    padding: 30px 20px;
+    gap: 20px;
+  }
+
+  .heading {
+    font-size: 22px;
+  }
+
+  .subheading {
+    font-size: 13px;
+  }
+
+  .selectButton {
+    padding: 12px 14px;
+  }
+
+  .selectText {
+    font-size: 14px;
+  }
+
+  .selectArrow {
+    font-size: 14px;
+  }
+
+  .option {
+    padding: 12px 14px;
+  }
+
+  .optionIcon {
+    font-size: 20px;
+  }
+
+  .optionLabel {
+    font-size: 14px;
+  }
+
+  .nextButton {
+    padding: 12px 24px;
+    font-size: 14px;
+    height: 44px;
+  }
+}

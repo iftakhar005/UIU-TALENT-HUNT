@@ -1,0 +1,337 @@
+.readBlog {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+}
+
+.mainContent {
+  flex: 1;
+  width: 100%;
+  background-color: #f9fafb;
+  overflow: hidden;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 40px;
+  box-sizing: border-box;
+}
+
+/* Header */
+.header {
+  margin-bottom: 40px;
+}
+
+.category {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #f48c25;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1.2;
+  color: #0a2540;
+  margin: 16px 0;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.meta {
+  font-size: 14px;
+  color: #8a7560;
+  margin: 0;
+  font-family: Poppins, sans-serif;
+}
+
+/* Featured Image */
+.featuredImage {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 40px;
+  display: block;
+}
+
+/* Article Content */
+.article {
+  margin-bottom: 40px;
+}
+
+.paragraph {
+  font-size: 16px;
+  line-height: 28px;
+  color: #181411;
+  margin-bottom: 24px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  text-align: justify;
+}
+
+/* Author Box */
+.authorBox {
+  display: flex;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 40px;
+  background-color: #fff;
+}
+
+.authorAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.authorInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.authorLabel {
+  font-size: 12px;
+  color: #8a7560;
+  margin: 0;
+  font-weight: 600;
+}
+
+.authorName {
+  font-size: 16px;
+  color: #0a2540;
+  margin: 0;
+  font-weight: 600;
+  font-family: Poppins, sans-serif;
+}
+
+.authorBio {
+  font-size: 14px;
+  color: #181411;
+  margin: 0;
+  font-family: Poppins, sans-serif;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 40px 0;
+}
+
+/* Comments Section */
+.commentsSection {
+  margin-top: 40px;
+}
+
+.commentsTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 30px;
+  font-family: Poppins, sans-serif;
+}
+
+/* Comment Form */
+.commentForm {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.formContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.commentInput {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: Poppins, sans-serif;
+  font-size: 14px;
+  color: #111827;
+  resize: vertical;
+  min-height: 80px;
+  box-sizing: border-box;
+}
+
+.commentInput::placeholder {
+  color: #9ca3af;
+}
+
+.commentInput:focus {
+  outline: none;
+  border-color: #f48c25;
+  box-shadow: 0 0 0 3px rgba(244, 140, 37, 0.1);
+}
+
+.submitButton {
+  align-self: flex-start;
+  padding: 10px 24px;
+  background-color: #f48c25;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: Poppins, sans-serif;
+  transition: background-color 0.3s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #e67e1a;
+}
+
+.submitButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Comments List */
+.comment {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background-color: #f8f7f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.commentAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.commentContent {
+  flex: 1;
+}
+
+.commentHeader {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.commentAuthor {
+  font-size: 14px;
+  color: #0a2540;
+  font-family: Poppins, sans-serif;
+}
+
+.commentTime {
+  font-size: 12px;
+  color: #8a7560;
+  font-family: Poppins, sans-serif;
+}
+
+.commentText {
+  font-size: 14px;
+  line-height: 20px;
+  color: #181411;
+  margin: 0;
+  font-family: Poppins, sans-serif;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 40px 20px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .featuredImage {
+    height: 250px;
+  }
+
+  .paragraph {
+    font-size: 15px;
+    line-height: 24px;
+  }
+
+  .authorBox {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .authorAvatar {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 20px 16px;
+  }
+
+  .category {
+    font-size: 11px;
+  }
+
+  .title {
+    font-size: 20px;
+    margin: 12px 0;
+  }
+
+  .meta {
+    font-size: 12px;
+  }
+
+  .featuredImage {
+    height: 180px;
+    margin-bottom: 24px;
+  }
+
+  .paragraph {
+    font-size: 14px;
+    line-height: 22px;
+    margin-bottom: 16px;
+  }
+
+  .authorBox {
+    padding: 16px;
+  }
+
+  .commentInput {
+    min-height: 60px;
+    font-size: 13px;
+  }
+
+  .comment {
+    gap: 12px;
+    padding: 16px;
+  }
+}

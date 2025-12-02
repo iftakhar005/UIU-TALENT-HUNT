@@ -1,0 +1,347 @@
+.signup {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  font-family: 'Poppins', sans-serif;
+  background-color: #ffffff;
+}
+
+.backgroundverticalborder {
+  position: relative;
+  height: 100vh;
+  width: 50%;
+  background: linear-gradient(135deg, transparent 48%, #f4a460 48%, #f4a460 52%, transparent 52%),
+              linear-gradient(135deg, transparent 43%, #f4a460 43%, #f4a460 57%, transparent 57%),
+              #1e3a5f;
+  background-size: 200px 200px, 200px 200px;
+  background-position: 0 0, 50px 50px;
+  background-repeat: repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.heading2 {
+  font-size: 28px;
+  font-weight: 900;
+  color: #ffffff;
+  text-align: center;
+  letter-spacing: 2px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  z-index: 2;
+  position: relative;
+  margin: 0;
+}
+
+.unleashYourPotential {
+  font-size: 16px;
+  color: #ffffff;
+  text-align: center;
+  font-weight: 400;
+  z-index: 2;
+  position: relative;
+  margin: 0;
+}
+
+.tWrapper {
+  filter: drop-shadow(0px 4px 4px #000);
+  border-radius: 0px 0px 99999px 99999px;
+  border-right: 20px solid #ff6a00;
+  border-bottom: 20px solid #ff6a00;
+  border-left: 20px solid #ff6a00;
+  box-sizing: border-box;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 27px;
+  font-size: 64px;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.tWrapper:hover {
+  transform: scale(1.05);
+}
+
+.t {
+  position: relative;
+  line-height: 28px;
+  font-weight: 900;
+  text-shadow: 0px 4px 4px #000;
+  color: #ffffff;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  margin: 0;
+}
+
+.background {
+  width: 50%;
+  height: 100vh;
+  background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.container {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.heading1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.createYourChapnion {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0 0 32px 0;
+  font-weight: 400;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.labelFull,
+.labelEmail,
+.labelStudent,
+.labelCreate,
+.labelConfirm {
+  display: none;
+}
+
+.input,
+.input2,
+.input3,
+.input4,
+.input5 {
+  width: 100%;
+  height: 50px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 14px 16px;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: #111827;
+}
+
+.input::placeholder,
+.input2::placeholder,
+.input3::placeholder {
+  color: #9ca3af;
+}
+
+.container2 {
+  display: none;
+}
+
+.enterFullName,
+.enterEmail,
+.enterStudentId,
+.createPassword,
+.confirmPassword {
+  flex: 1;
+  font-size: 14px;
+  color: #111827;
+  font-weight: 400;
+  font-family: 'Poppins', sans-serif;
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+}
+
+.enterFullName::placeholder,
+.enterEmail::placeholder,
+.enterStudentId::placeholder,
+.createPassword::placeholder,
+.confirmPassword::placeholder {
+  color: #9ca3af;
+}
+
+.buttonIcon,
+.buttonIcon2 {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.button {
+  width: 100%;
+  height: 50px;
+  background-color: #f4a460;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-top: 24px;
+  transition: background-color 0.3s ease;
+  border: none;
+}
+
+.button:hover {
+  background-color: #f39340;
+}
+
+.signup2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.alreadyHaveAn {
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.link {
+  cursor: pointer;
+}
+
+.login {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f4a460;
+  transition: color 0.3s ease;
+  text-decoration: none;
+}
+
+.link:hover .login {
+  color: #f39340;
+}
+
+.errorMessage {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 6px;
+  padding: 0 4px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .backgroundverticalborder {
+    width: 50%;
+    padding: 30px;
+  }
+
+  .heading2 {
+    font-size: 24px;
+  }
+
+  .background {
+    width: 50%;
+    padding: 30px;
+  }
+
+  .heading1 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .signup {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .backgroundverticalborder {
+    width: 100%;
+    min-height: 300px;
+    padding: 30px;
+  }
+
+  .background {
+    width: 100%;
+    padding: 30px;
+  }
+
+  .heading2 {
+    font-size: 22px;
+  }
+
+  .heading1 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signup {
+    flex-direction: column;
+  }
+
+  .backgroundverticalborder {
+    width: 100%;
+    min-height: 250px;
+    padding: 20px;
+  }
+
+  .background {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 100%;
+  }
+
+  .heading2 {
+    font-size: 18px;
+  }
+
+  .heading1 {
+    font-size: 20px;
+  }
+
+  .input,
+  .input2,
+  .input3,
+  .input4,
+  .input5 {
+    height: 40px;
+  }
+}
