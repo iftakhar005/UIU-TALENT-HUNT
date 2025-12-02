@@ -1,0 +1,465 @@
+.aSubmit {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f0f4f8;
+  overflow: hidden;
+  font-family: Poppins, 'Be Vietnam Pro', Inter;
+}
+
+.main {
+  position: relative;
+  width: calc(100% - 142px);
+  margin: 200px auto 0;
+  padding: 40px 64px 130px 78px;
+  min-height: calc(100vh - 200px);
+  color: #1a2b3a;
+}
+
+.paragraph {
+  margin-bottom: 80px;
+}
+
+.audioUpload {
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 45px;
+  letter-spacing: -1.19px;
+  color: #1a2b3a;
+  margin-bottom: 12px;
+}
+
+.streamlineYourAudio {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 24px;
+  color: rgba(26, 43, 58, 0.7);
+}
+
+.label {
+  margin-bottom: 50px;
+}
+
+.audioTrackTitle {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #1a2b3a;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.input {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  background-color: #fff;
+  border: 1px solid #d4d4d4;
+  height: 52px;
+  overflow: hidden;
+}
+
+.container {
+  padding: 16px;
+}
+
+.inputField {
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 300;
+  color: #1a2b3a;
+  background-color: transparent;
+  font-family: 'Be Vietnam Pro', Poppins;
+}
+
+.inputField::placeholder {
+  color: rgba(26, 43, 58, 0.5);
+}
+
+.inputField:focus {
+  outline: none;
+}
+
+.audioFileUploader {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #1a2b3a;
+  margin-bottom: 12px;
+  display: block;
+  margin-top: 30px;
+}
+
+.backgroundborder {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  background-color: #f3f4f6;
+  border: 2px dashed rgba(93, 155, 204, 0.5);
+  padding: 40px 20px;
+  text-align: center;
+  margin-bottom: 50px;
+  min-height: 255px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.button {
+  background-color: #1a2b3a;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.container3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.browseFiles {
+  color: #fff;
+  font-size: 14px;
+  line-height: 21px;
+  letter-spacing: 0.21px;
+  font-weight: 600;
+}
+
+.paragraph2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.audiotrack {
+  font-size: 48px;
+  line-height: 48px;
+  color: #5d9bcc;
+}
+
+.dragDrop {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 22.5px;
+  letter-spacing: -0.27px;
+  color: #1a2b3a;
+}
+
+.mp3WavOgg {
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 21px;
+  color: rgba(26, 43, 58, 0.7);
+}
+
+.label2 {
+  margin-bottom: 50px;
+}
+
+.categoriesTags {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #1a2b3a;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.backgroundborder2 {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  background-color: #fff;
+  border: 1px solid #d4d4d4;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-height: 66px;
+}
+
+.overlay,
+.overlay2 {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background-color: rgba(93, 155, 204, 0.2);
+  padding: 6px 12px;
+  gap: 8px;
+  color: #5d9bcc;
+}
+
+.music,
+.podcast {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.button2,
+.button3 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(93, 155, 204, 0.7);
+  font-size: 16px;
+  padding: 0;
+}
+
+.close {
+  color: inherit;
+  font-size: 14px;
+}
+
+.input2 {
+  flex: 1;
+  min-width: 200px;
+}
+
+.container4 {
+  width: 100%;
+}
+
+.tagInput {
+  width: 100%;
+  height: 40px;
+  border: none;
+  padding: 10px 12px;
+  font-size: 16px;
+  color: #1a2b3a;
+  background-color: transparent;
+  font-family: 'Be Vietnam Pro', Poppins;
+}
+
+.tagInput::placeholder {
+  color: rgba(26, 43, 58, 0.5);
+}
+
+.tagInput:focus {
+  outline: none;
+}
+
+.container5 {
+  margin-bottom: 50px;
+}
+
+.audioTranscriptOr {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #1a2b3a;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.border {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #d4d4d4;
+  overflow: hidden;
+}
+
+.textarea {
+  position: relative;
+  width: 100%;
+  background-color: #fff;
+  border-radius: 12px 12px 0 0;
+  min-height: 160px;
+  padding: 15px;
+}
+
+.textareaField {
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 24px;
+  color: #1a2b3a;
+  background-color: transparent;
+  font-family: 'Be Vietnam Pro', Poppins;
+  resize: vertical;
+}
+
+.textareaField::placeholder {
+  color: rgba(26, 43, 58, 0.5);
+}
+
+.textareaField:focus {
+  outline: none;
+}
+
+.backgroundhorizontalborder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f5f5f5;
+  border-radius: 0 0 12px 12px;
+  border-top: 1px solid #d4d4d4;
+  padding: 12px 15px;
+  height: 57px;
+}
+
+.button4,
+.button5,
+.button6,
+.button7 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 16px;
+  color: rgba(26, 43, 58, 0.7);
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.button4:hover,
+.button5:hover,
+.button6:hover,
+.button7:hover {
+  background-color: #e5e5e5;
+}
+
+.formatBold,
+.formatItalic,
+.formatListBulleted,
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button8,
+.button9 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  height: 48px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.24px;
+  transition: all 0.2s;
+}
+
+.button8 {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #1a2b3a;
+  width: 160px;
+  margin-right: 20px;
+}
+
+.button8:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.button9 {
+  background-color: #f97316;
+  color: #fff;
+  width: 160px;
+}
+
+.button9:hover {
+  background-color: #ea580c;
+}
+
+.container6,
+.container7 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+}
+
+.saveAsDraft,
+.submitAudio {
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.24px;
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .main {
+    padding: 30px 40px 100px 40px;
+    width: calc(100% - 80px);
+  }
+
+  .button8 {
+    margin-right: 10px;
+    width: 140px;
+  }
+
+  .button9 {
+    width: 140px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 20px 16px 100px 16px;
+    width: calc(100% - 32px);
+    margin-top: 150px;
+  }
+
+  .audioUpload {
+    font-size: 28px;
+    line-height: 36px;
+  }
+
+  .streamlineYourAudio {
+    font-size: 14px;
+  }
+
+  .backgroundborder {
+    padding: 30px 15px;
+    min-height: 200px;
+  }
+
+  .audiotrack {
+    font-size: 36px;
+  }
+
+  .dragDrop {
+    font-size: 16px;
+  }
+
+  .button8,
+  .button9 {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .backgroundhorizontalborder {
+    flex-wrap: wrap;
+    height: auto;
+    gap: 6px;
+  }
+
+  .button4,
+  .button5,
+  .button6,
+  .button7 {
+    width: 36px;
+    height: 36px;
+  }
+}
