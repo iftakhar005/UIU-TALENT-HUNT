@@ -10,6 +10,7 @@ import ReadBlog from './pages/blogs/ReadBlog';
 import SubmitEntry from './pages/SubmitEntry';
 import SignUp from './pages/signup/Signup';
 import AudioSubmit from './pages/submit/AudioSubmit';
+import ProfilePage from './pages/profile/Profile';
 import './App.css';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/videos" element={<VPortal />} />
         <Route path="/videos/:id" element={<VPlayer />} />
         <Route path="/audios" element={<AudioPortal />} />
