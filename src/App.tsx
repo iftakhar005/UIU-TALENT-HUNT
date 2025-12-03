@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/home/HomePage';
 import LoginPage from './pages/login/LoginPage';
-import VideosPage from './pages/VideosPage';
 import AudioPortal from './pages/audios/AudioPortal';
 import AudioPlayer from './pages/audios/AudioPlayer';
 import VPortal from './pages/videos/VPortal';
+import VPlayer from './pages/videos/VPlayer';
 import Blogs from './pages/blogs/Blogs';
 import ReadBlog from './pages/blogs/ReadBlog';
 import SubmitEntry from './pages/SubmitEntry';
@@ -22,7 +22,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/videos" element={<VPortal />} />
-        <Route path="/videos/:id" element={<VideosPage />} />
+        <Route path="/videos/:id" element={<VPlayer />} />
         <Route path="/audios" element={<AudioPortal />} />
         <Route path="/audios/:id" element={<AudioPlayer />} />
         <Route path="/blogs" element={<Blogs />} />
