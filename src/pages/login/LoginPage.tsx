@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../../services/api';
 import styles from '../../styles/LoginPage.module.css';
 
 export default function LoginPage() {
@@ -7,13 +8,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Dummy credentials
-  const DUMMY_EMAIL = 'user@uiu.ac.bd';
-  const DUMMY_PASSWORD = 'password123';
-
-  const onLoginClick = useCallback(() => {
+  const onLoginClick = useCallback(async () => {
     setError('');
     
     if (!email || !password) {
@@ -21,12 +19,20 @@ export default function LoginPage() {
       return;
     }
 
-    if (email === DUMMY_EMAIL && password === DUMMY_PASSWORD) {
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userEmail', email);
+    setLoading(true);
+
+    try {
+      const response = await authAPI.login(email, password);
+      
+      // Save auth data
+      authAPI.saveAuth(response.token, response.user);
+      
+      // Navigate to home
       navigate('/');
-    } else {
-      setError('Invalid email or password');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   }, [email, password, navigate]);
 
@@ -97,16 +103,14 @@ export default function LoginPage() {
           </a>
 
           {/* Login Button */}
-          <button className={styles.button} onClick={onLoginClick}>
-            <b className={styles.login2}>Login</b>
+          <button 
+            className={styles.button} 
+            onClick={onLoginClick}
+            disabled={loading}
+            style={{ opacity: loading ? 0.7 : 1 }}
+          >
+            <b className={styles.login2}>{loading ? 'Logging in...' : 'Login'}</b>
           </button>
-
-          {/* Dummy Credentials Info */}
-          <div style={{ fontSize: '12px', color: '#666', marginTop: '16px', textAlign: 'center' }}>
-            <p><strong>Demo Credentials:</strong></p>
-            <p>Email: {DUMMY_EMAIL}</p>
-            <p>Password: {DUMMY_PASSWORD}</p>
-          </div>
 
           {/* Sign Up Link */}
           <div className={styles.dontHaveAnContainer}>
