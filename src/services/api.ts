@@ -1,5 +1,5 @@
 // API Service for UIU Talent Hunt
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://uiu-talent-hunt-backend.onrender.com/api';
 
 // Types
 export interface User {
@@ -26,6 +26,90 @@ export interface ApiError {
   error: string;
 }
 
+// Content Types
+export interface ContentSubmission {
+  _id: string;
+  contentType: 'video' | 'audio' | 'blog';
+  title: string;
+  description: string;
+  category: string;
+  tags: string[];
+  status: 'pending' | 'approved' | 'rejected';
+  mediaUrl?: string;
+  thumbnailUrl?: string;
+  blogContent?: string;
+  rejectionReason?: string;
+  submittedAt: string;
+}
+
+export interface PublishedContent {
+  _id: string;
+  user: {
+    _id: string;
+    username: string;
+    fullName: string;
+    avatar?: string;
+  };
+  title: string;
+  description: string;
+  category: string;
+  tags: string[];
+  videoUrl?: string;
+  audioUrl?: string;
+  content?: string;
+  thumbnailUrl?: string;
+  coverImageUrl?: string;
+  duration?: number;
+  views?: number;
+  plays?: number;
+  likes: string[];
+  comments: { user: string; text: string; createdAt: string }[];
+  createdAt: string;
+}
+
+export interface Pagination {
+  total: number;
+  page: number;
+  pages: number;
+  limit: number;
+}
+
+export interface ContentStats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  byType?: {
+    video: number;
+    audio: number;
+    blog: number;
+  };
+}
+
+export interface AdminContentRequest extends ContentSubmission {
+  user: {
+    _id: string;
+    username: string;
+    fullName: string;
+    email: string;
+  };
+  adminNotes?: string;
+}
+
+export const CONTENT_CATEGORIES = [
+  'music',
+  'dance', 
+  'drama',
+  'poetry',
+  'art',
+  'photography',
+  'film',
+  'writing',
+  'other'
+] as const;
+
+export type ContentCategory = typeof CONTENT_CATEGORIES[number];
+
 // Helper function for API calls
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('token');
@@ -44,7 +128,35 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Something went wrong');
+      throw new Error(data.message || data.error || 'Something went wrong');
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Network error. Please check your connection.');
+  }
+}
+
+// Helper for FormData requests (file uploads)
+async function uploadRequest<T>(endpoint: string, formData: FormData): Promise<T> {
+  const token = localStorage.getItem('token');
+  
+  try {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+    
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || data.error || 'Upload failed');
     }
 
     return data;
@@ -145,40 +257,182 @@ export const authAPI = {
 
 // Content API
 export const contentAPI = {
-  // Get all content
-  getAll: async (params?: { type?: string; page?: number; limit?: number }) => {
+  // Get all published content
+  getAll: async (params?: { type?: string; category?: string; page?: number; limit?: number }) => {
     const searchParams = new URLSearchParams();
     if (params?.type) searchParams.append('type', params.type);
+    if (params?.category) searchParams.append('category', params.category);
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
     
-    return request(`/content?${searchParams}`);
+    return request<{ success: boolean; content: PublishedContent[]; pagination: Pagination }>(`/content?${searchParams}`);
   },
 
   // Get single content
   getById: async (id: string) => {
-    return request(`/content/${id}`);
-  },
-
-  // Create content
-  create: async (data: {
-    title: string;
-    description?: string;
-    type: 'video' | 'audio' | 'blog';
-    fileUrl?: string;
-    thumbnailUrl?: string;
-    tags?: string[];
-    blogContent?: string;
-  }) => {
-    return request('/content', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return request<{ success: boolean; content: PublishedContent }>(`/content/${id}`);
   },
 
   // Like/unlike content
   toggleLike: async (id: string) => {
-    return request(`/content/${id}/like`, { method: 'POST' });
+    return request<{ success: boolean; liked: boolean; likesCount: number }>(`/content/${id}/like`, { method: 'POST' });
+  },
+};
+
+// Submission API (for users to submit content for approval)
+export const submissionAPI = {
+  // Submit video
+  submitVideo: async (data: {
+    video: File;
+    thumbnail?: File;
+    title: string;
+    description: string;
+    category: ContentCategory;
+    tags?: string;
+  }) => {
+    const formData = new FormData();
+    formData.append('video', data.video);
+    if (data.thumbnail) formData.append('thumbnail', data.thumbnail);
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('category', data.category);
+    if (data.tags) formData.append('tags', data.tags);
+    
+    return uploadRequest<{ success: boolean; message: string; request: { id: string; title: string; status: string; submittedAt: string } }>(
+      '/content/submit/video',
+      formData
+    );
+  },
+
+  // Submit audio
+  submitAudio: async (data: {
+    audio: File;
+    cover?: File;
+    title: string;
+    description: string;
+    category: ContentCategory;
+    tags?: string;
+  }) => {
+    const formData = new FormData();
+    formData.append('audio', data.audio);
+    if (data.cover) formData.append('cover', data.cover);
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('category', data.category);
+    if (data.tags) formData.append('tags', data.tags);
+    
+    return uploadRequest<{ success: boolean; message: string; request: { id: string; title: string; status: string; submittedAt: string } }>(
+      '/content/submit/audio',
+      formData
+    );
+  },
+
+  // Submit blog
+  submitBlog: async (data: {
+    cover?: File;
+    title: string;
+    description?: string;
+    category: ContentCategory;
+    tags?: string;
+    blogContent: string;
+  }) => {
+    const formData = new FormData();
+    if (data.cover) formData.append('cover', data.cover);
+    formData.append('title', data.title);
+    if (data.description) formData.append('description', data.description);
+    formData.append('category', data.category);
+    if (data.tags) formData.append('tags', data.tags);
+    formData.append('blogContent', data.blogContent);
+    
+    return uploadRequest<{ success: boolean; message: string; request: { id: string; title: string; status: string; submittedAt: string } }>(
+      '/content/submit/blog',
+      formData
+    );
+  },
+
+  // Get user's submissions
+  getMySubmissions: async (params?: { status?: string; contentType?: string; page?: number; limit?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.status) searchParams.append('status', params.status);
+    if (params?.contentType) searchParams.append('contentType', params.contentType);
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    
+    return request<{ success: boolean; submissions: ContentSubmission[]; pagination: Pagination }>(
+      `/content/my-submissions?${searchParams}`
+    );
+  },
+
+  // Get single submission
+  getSubmission: async (id: string) => {
+    return request<{ success: boolean; submission: ContentSubmission }>(`/content/submission/${id}`);
+  },
+
+  // Delete pending submission
+  deleteSubmission: async (id: string) => {
+    return request<{ success: boolean; message: string }>(`/content/submission/${id}`, { method: 'DELETE' });
+  },
+};
+
+// Admin API
+export const adminAPI = {
+  // Get submission statistics
+  getStats: async () => {
+    return request<{ success: boolean; stats: ContentStats }>('/admin/content/stats');
+  },
+
+  // Get pending submissions
+  getPending: async (params?: { contentType?: string; page?: number; limit?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.contentType) searchParams.append('contentType', params.contentType);
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    
+    return request<{ success: boolean; requests: AdminContentRequest[]; stats: ContentStats; pagination: Pagination }>(
+      `/admin/content/pending?${searchParams}`
+    );
+  },
+
+  // Get all submissions
+  getAllSubmissions: async (params?: { status?: string; contentType?: string; page?: number; limit?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.status) searchParams.append('status', params.status);
+    if (params?.contentType) searchParams.append('contentType', params.contentType);
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    
+    return request<{ success: boolean; requests: AdminContentRequest[]; pagination: Pagination }>(
+      `/admin/content/all?${searchParams}`
+    );
+  },
+
+  // Get submission details
+  getRequest: async (id: string) => {
+    return request<{ success: boolean; request: AdminContentRequest }>(`/admin/content/request/${id}`);
+  },
+
+  // Approve content
+  approve: async (id: string, adminNotes?: string) => {
+    return request<{ success: boolean; message: string; content: PublishedContent }>(`/admin/content/approve/${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ adminNotes }),
+    });
+  },
+
+  // Reject content
+  reject: async (id: string, rejectionReason: string, adminNotes?: string, deleteMedia?: boolean) => {
+    return request<{ success: boolean; message: string }>(`/admin/content/reject/${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ rejectionReason, adminNotes, deleteMedia }),
+    });
+  },
+
+  // Delete submission
+  deleteSubmission: async (id: string, deleteMedia?: boolean) => {
+    return request<{ success: boolean; message: string }>(`/admin/content/request/${id}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ deleteMedia }),
+    });
   },
 };
 
@@ -195,4 +449,4 @@ export const userAPI = {
   },
 };
 
-export default { authAPI, contentAPI, userAPI };
+export default { authAPI, contentAPI, submissionAPI, adminAPI, userAPI };
