@@ -1,0 +1,318 @@
+.submitPage {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+  padding: 80px 20px 40px;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 2rem;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+}
+
+.errorBox {
+  background: rgba(220, 38, 38, 0.15);
+  color: #f87171;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.wordCount {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: #5d9bcc;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.select {
+  cursor: pointer;
+}
+
+.select option {
+  background: #1a1a2e;
+  color: #fff;
+}
+
+.charCount {
+  display: block;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.uploadBox {
+  position: relative;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  transition: all 0.3s;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.uploadBox:hover {
+  border-color: #5d9bcc;
+  background: rgba(93, 155, 204, 0.05);
+}
+
+.fileInput {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.uploadLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.uploadIcon {
+  font-size: 3rem;
+}
+
+.uploadText {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+}
+
+.uploadHint {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+}
+
+.fileInfo {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: rgba(93, 155, 204, 0.15);
+  border-radius: 6px;
+  color: #5d9bcc;
+  font-size: 0.9rem;
+}
+
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  min-height: 48px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(93, 155, 204, 0.2);
+  border-radius: 20px;
+  color: #5d9bcc;
+  font-size: 0.85rem;
+}
+
+.tagRemove {
+  background: none;
+  border: none;
+  color: #5d9bcc;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.tagRemove:hover {
+  color: #f87171;
+}
+
+.tagInput {
+  flex: 1;
+  min-width: 150px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.9rem;
+  padding: 4px;
+}
+
+.tagInput:focus {
+  outline: none;
+}
+
+.tagInput::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.blogTextarea {
+  width: 100%;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px 8px 0 0;
+  color: #fff;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 300px;
+  font-family: inherit;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.blogTextarea:focus {
+  outline: none;
+  border-color: #5d9bcc;
+}
+
+.blogTextarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.editorToolbar {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+}
+
+.toolbarBtn {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toolbarBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.draftButton {
+  padding: 14px 24px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.draftButton:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.submitButton {
+  flex: 1;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #5d9bcc, #4ecdc4);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(93, 155, 204, 0.4);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 24px 16px;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+  }
+}

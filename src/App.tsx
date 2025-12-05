@@ -10,6 +10,9 @@ import ReadBlog from './pages/blogs/ReadBlog';
 import SubmitEntry from './pages/SubmitEntry';
 import SignUp from './pages/signup/Signup';
 import AudioSubmit from './pages/submit/AudioSubmit';
+import VideoSubmit from './pages/submit/VideoSubmit';
+import BlogSubmit from './pages/submit/BlogSubmit';
+import MySubmissions from './pages/submissions/MySubmissions';
 import ProfilePage from './pages/profile/Profile';
 import './App.css';
 
@@ -28,8 +31,10 @@ function App() {
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogs/:id" element={<ReadBlog />} />
         <Route path="/submit" element={<SubmitEntry />} />
-        <Route path="/submit/:type" element={<SubmitEntry />} />
+        <Route path="/submit/video" element={<VideoSubmit />} />
         <Route path="/submit/audio" element={<AudioSubmit />} />
+        <Route path="/submit/blog" element={<BlogSubmit />} />
+        <Route path="/my-submissions" element={<MySubmissions />} />
       </Routes>
     </Router>
   );
