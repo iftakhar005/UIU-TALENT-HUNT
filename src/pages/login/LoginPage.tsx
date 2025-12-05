@@ -1,21 +1,21 @@
-import { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../../services/api';
-import styles from '../../styles/LoginPage.module.css';
+import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { authAPI } from "../../services/api";
+import styles from "../../styles/LoginPage.module.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const onLoginClick = useCallback(async () => {
-    setError('');
-    
+    setError("");
+
     if (!email || !password) {
-      setError('Please enter both email and password');
+      setError("Please enter both email and password");
       return;
     }
 
@@ -23,25 +23,27 @@ export default function LoginPage() {
 
     try {
       const response = await authAPI.login(email, password);
-      
+
       // Save auth data
       authAPI.saveAuth(response.token, response.user);
-      
+
       // Navigate to home
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
+      setError(
+        err instanceof Error ? err.message : "Login failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   }, [email, password, navigate]);
 
   const onSignUpClick = useCallback(() => {
-    navigate('/signup');
+    navigate("/signup");
   }, [navigate]);
 
   const onLogoClick = useCallback(() => {
-    navigate('/');
+    navigate("/");
   }, [navigate]);
 
   return (
@@ -79,23 +81,35 @@ export default function LoginPage() {
             <div className={styles.password}>Password</div>
             <div className={styles.inputPasswordWrapper}>
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 className={styles.inputField2}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <button 
+              <button
                 className={styles.eyeButton}
                 onClick={() => setShowPassword(!showPassword)}
               >
-                <span className="material-icons">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                <span className="material-icons">
+                  {showPassword ? "visibility_off" : "visibility"}
+                </span>
               </button>
             </div>
           </div>
 
           {/* Error Message */}
-          {error && <div style={{ color: '#dc2626', fontSize: '12px', marginBottom: '12px' }}>{error}</div>}
+          {error && (
+            <div
+              style={{
+                color: "#dc2626",
+                fontSize: "12px",
+                marginBottom: "12px",
+              }}
+            >
+              {error}
+            </div>
+          )}
 
           {/* Forgot Password */}
           <a href="#" className={styles.linkForgot}>
@@ -103,23 +117,22 @@ export default function LoginPage() {
           </a>
 
           {/* Login Button */}
-          <button 
-            className={styles.button} 
+          <button
+            className={styles.button}
             onClick={onLoginClick}
             disabled={loading}
             style={{ opacity: loading ? 0.7 : 1 }}
           >
-            <b className={styles.login2}>{loading ? 'Logging in...' : 'Login'}</b>
+            <b className={styles.login2}>
+              {loading ? "Logging in..." : "Login"}
+            </b>
           </button>
 
           {/* Sign Up Link */}
           <div className={styles.dontHaveAnContainer}>
             <span>
-              Don't have an account?{' '}
-              <button
-                onClick={onSignUpClick}
-                className={styles.signUpLink}
-              >
+              Don't have an account?{" "}
+              <button onClick={onSignUpClick} className={styles.signUpLink}>
                 Sign Up
               </button>
             </span>
@@ -129,3 +142,4 @@ export default function LoginPage() {
     </div>
   );
 }
+// End of LoginPage.tsx
