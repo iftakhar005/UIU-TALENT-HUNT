@@ -1,24 +1,33 @@
 import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { FunctionComponent } from 'react';
 import styles from '../../styles/AudioSubmit.module.css';
 import useNavbar from '../../hooks/useNavbar';
 import useFooter from '../../hooks/useFooter';
+import { submissionAPI, CONTENT_CATEGORIES, type ContentCategory } from '../../services/api';
 
 const AudioSubmit: FunctionComponent = () => {
+  const navigate = useNavigate();
   const { Navbar } = useNavbar();
   const { Footer } = useFooter();
 
   // Form state
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<ContentCategory>('music');
   const [file, setFile] = useState<File | null>(null);
-  const [tags, setTags] = useState<string[]>(['Music', 'Podcast']);
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
-  const [transcript, setTranscript] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && tagInput.trim()) {
       e.preventDefault();
-      setTags([...tags, tagInput.trim()]);
+      if (!tags.includes(tagInput.trim())) {
+        setTags([...tags, tagInput.trim()]);
+      }
       setTagInput('');
     }
   };
@@ -27,41 +36,43 @@ const AudioSubmit: FunctionComponent = () => {
     setTags(tags.filter((_, i) => i !== index));
   };
 
-  const onSubmitClick = useCallback(() => {
+  const onSubmitClick = useCallback(async () => {
+    setError('');
+    
     // Validate form
     if (!title.trim()) {
-      alert('Please provide a title for your audio track.');
+      setError('Please provide a title for your audio track.');
+      return;
+    }
+    if (!description.trim()) {
+      setError('Please provide a description.');
       return;
     }
     if (!file) {
-      alert('Please upload an audio file.');
-      return;
-    }
-    if (tags.length === 0) {
-      alert('Please add at least one tag.');
+      setError('Please upload an audio file.');
       return;
     }
 
-    // Handle audio submission
-    const formData = {
-      title,
-      file: file.name,
-      fileSize: file.size,
-      tags,
-      transcript,
-      submittedAt: new Date().toLocaleString(),
-    };
+    setIsSubmitting(true);
 
-    console.log('Submitting audio:', formData);
-    alert('Audio submitted successfully!');
+    try {
+      const result = await submissionAPI.submitAudio({
+        audio: file,
+        cover: coverImage || undefined,
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        tags: tags.join(','),
+      });
 
-    // Reset form
-    setTitle('');
-    setFile(null);
-    setTags(['Music', 'Podcast']);
-    setTagInput('');
-    setTranscript('');
-  }, [title, file, tags, transcript]);
+      alert(result.message || 'Audio submitted for approval!');
+      navigate('/my-submissions');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit audio');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [title, description, category, file, coverImage, tags, navigate]);
 
   const onSaveDraftClick = useCallback(() => {
     if (!title.trim()) {
@@ -71,16 +82,16 @@ const AudioSubmit: FunctionComponent = () => {
 
     const draftData = {
       title,
+      description,
+      category,
       file: file?.name || null,
       tags,
-      transcript,
       savedAt: new Date().toLocaleString(),
     };
 
-    console.log('Saving draft:', draftData);
     localStorage.setItem('audioDraft', JSON.stringify(draftData));
     alert('Saved as draft!');
-  }, [title, file, tags, transcript]);
+  }, [title, description, category, file, tags]);
 
   return (
     <>
@@ -89,11 +100,23 @@ const AudioSubmit: FunctionComponent = () => {
         <div className={styles.main}>
           <div className={styles.paragraph}>
             <div className={styles.audioUpload}>Audio Upload</div>
-            <div className={styles.streamlineYourAudio}>Streamline your audio submissions.</div>
+            <div className={styles.streamlineYourAudio}>Submit your audio for review and approval.</div>
           </div>
 
+          {error && (
+            <div style={{ 
+              background: '#fee2e2', 
+              color: '#dc2626', 
+              padding: '12px 16px', 
+              borderRadius: '8px', 
+              marginBottom: '16px' 
+            }}>
+              {error}
+            </div>
+          )}
+
           <div className={styles.label}>
-            <div className={styles.audioTrackTitle}>Audio Track Title</div>
+            <div className={styles.audioTrackTitle}>Audio Track Title *</div>
             <div className={styles.input}>
               <div className={styles.container}>
                 <input
@@ -107,11 +130,31 @@ const AudioSubmit: FunctionComponent = () => {
             </div>
           </div>
 
-          <div className={styles.audioFileUploader}>Audio File Uploader</div>
+          <div className={styles.label}>
+            <div className={styles.audioTrackTitle}>Category *</div>
+            <div className={styles.input}>
+              <div className={styles.container}>
+                <select
+                  className={styles.inputField}
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as ContentCategory)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {CONTENT_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.audioFileUploader}>Audio File Uploader *</div>
           <div className={styles.backgroundborder}>
             <input
               type="file"
-              accept="audio/mp3,audio/wav,audio/ogg,audio/mpeg"
+              accept="audio/mp3,audio/wav,audio/ogg,audio/mpeg,audio/x-m4a"
               style={{ display: 'none' }}
               id="audioFile"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
@@ -125,14 +168,38 @@ const AudioSubmit: FunctionComponent = () => {
               <div className={styles.paragraph2}>
                 <div className={styles.audiotrack}>🎵</div>
                 <b className={styles.dragDrop}>{`Drag & drop your audio file here, or click to upload`}</b>
-                <div className={styles.mp3WavOgg}>MP3, WAV, OGG (Max 20MB)</div>
+                <div className={styles.mp3WavOgg}>MP3, WAV, OGG, M4A (Max 20MB)</div>
               </div>
             </label>
-            {file && <div style={{ marginTop: '10px', fontSize: '14px', color: '#5d9bcc' }}>✓ {file.name}</div>}
+            {file && <div style={{ marginTop: '10px', fontSize: '14px', color: '#5d9bcc' }}>✓ {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</div>}
+          </div>
+
+          <div className={styles.audioFileUploader}>Cover Image (Optional)</div>
+          <div className={styles.backgroundborder}>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              style={{ display: 'none' }}
+              id="coverImage"
+              onChange={(e) => setCoverImage(e.target.files?.[0] || null)}
+            />
+            <label htmlFor="coverImage" style={{ width: '100%', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+              <div className={styles.button}>
+                <div className={styles.container3}>
+                  <b className={styles.browseFiles}>Browse Images</b>
+                </div>
+              </div>
+              <div className={styles.paragraph2}>
+                <div className={styles.audiotrack}>🖼️</div>
+                <b className={styles.dragDrop}>Upload a cover image for your audio</b>
+                <div className={styles.mp3WavOgg}>JPG, PNG, WebP (Max 5MB)</div>
+              </div>
+            </label>
+            {coverImage && <div style={{ marginTop: '10px', fontSize: '14px', color: '#5d9bcc' }}>✓ {coverImage.name}</div>}
           </div>
 
           <div className={styles.label2}>
-            <div className={styles.categoriesTags}>Categories / Tags</div>
+            <div className={styles.categoriesTags}>Tags (Optional)</div>
             <div className={styles.backgroundborder2}>
               {tags.map((tag, index) => (
                 <div key={index} className={styles.overlay}>
@@ -152,7 +219,7 @@ const AudioSubmit: FunctionComponent = () => {
                 <div className={styles.container4}>
                   <input
                     type="text"
-                    placeholder="e.g., Interview, Performance. Press Enter to add a tag."
+                    placeholder="e.g., Original, Cover. Press Enter to add."
                     className={styles.tagInput}
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
@@ -164,14 +231,14 @@ const AudioSubmit: FunctionComponent = () => {
           </div>
 
           <div className={styles.container5}>
-            <div className={styles.audioTranscriptOr}>Audio Transcript or Summary</div>
+            <div className={styles.audioTranscriptOr}>Description *</div>
             <div className={styles.border}>
               <div className={styles.textarea}>
                 <textarea
-                  placeholder="Provide a concise transcript or summary of your audio here..."
+                  placeholder="Describe your audio submission. What is it about? What inspired you?"
                   className={styles.textareaField}
-                  value={transcript}
-                  onChange={(e) => setTranscript(e.target.value)}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
               <div className={styles.backgroundhorizontalborder}>
@@ -197,9 +264,13 @@ const AudioSubmit: FunctionComponent = () => {
             </div>
           </div>
 
-          <div className={styles.button9} onClick={onSubmitClick}>
+          <div 
+            className={styles.button9} 
+            onClick={onSubmitClick}
+            style={{ opacity: isSubmitting ? 0.7 : 1, pointerEvents: isSubmitting ? 'none' : 'auto' }}
+          >
             <div className={styles.container7}>
-              <b className={styles.submitAudio}>Submit Audio</b>
+              <b className={styles.submitAudio}>{isSubmitting ? 'Submitting...' : 'Submit Audio'}</b>
             </div>
           </div>
         </div>
