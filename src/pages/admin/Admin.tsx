@@ -456,7 +456,9 @@ const Admin: FunctionComponent = () => {
           </div>
 
           <div
-            className={`${styles.footerFixed} ${showFooter ? styles.footerVisible : ""}`}
+            className={`${styles.footerFixed} ${
+              showFooter ? styles.footerVisible : ""
+            }`}
           >
             <Footer />
           </div>
