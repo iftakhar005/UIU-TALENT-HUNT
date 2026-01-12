@@ -11,7 +11,7 @@ interface ContentRequest {
     username: string;
     email: string;
     avatar?: string;
-  };
+  } | null;
   duration?: number;
   blogContent?: string;
   description: string;
@@ -23,6 +23,22 @@ interface ContentRequest {
   rejectionReason?: string;
 }
 
+/**
+ * ADMIN DASHBOARD WORKFLOW:
+ * 
+ * 1. User submits content (Video/Audio/Blog) → Stored in ContentRequest collection with status='pending'
+ * 2. Admin approves content:
+ *    - Creates entry in Video/Audio/Blog collection (published content)
+ *    - Updates ContentRequest status to 'approved'
+ *    - Content becomes visible on public portals (VideosPage, AudiosPage, BlogsPage)
+ * 3. Admin rejects content:
+ *    - Updates ContentRequest status to 'rejected'
+ *    - Content remains hidden from public
+ * 
+ * Database Flow:
+ * ContentRequest (pending) → [Admin Approves] → Video/Audio/Blog collection (published) → Public Pages
+ */
+
 const Admin: FunctionComponent = () => {
   const navigate = useNavigate();
   const [contentRequests, setContentRequests] = useState<ContentRequest[]>([]);
@@ -30,19 +46,67 @@ const Admin: FunctionComponent = () => {
   const [activeSection, setActiveSection] = useState('videos');
 
   useEffect(() => {
+    // Check if user is authenticated and is admin
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (!token || !user) {
+      console.warn('⚠️ No authentication found. Redirecting to login...');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(user);
+      if (parsedUser.role !== 'admin') {
+        alert('Admin access required!');
+        navigate('/');
+        return;
+      }
+    } catch (e) {
+      console.error('Error parsing user:', e);
+      navigate('/login');
+      return;
+    }
+
     fetchPendingContent();
-  }, []);
+  }, [navigate]);
 
   const fetchPendingContent = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/content/pending');
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        console.error('❌ No token found. Please log in.');
+        alert('Please log in first');
+        navigate('/login');
+        return;
+      }
+
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/admin/content/pending`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error(`❌ API Error ${response.status}:`, text);
+        throw new Error(`API Error: ${response.status}`);
+      }
+
       const data = await response.json();
       if (data.success) {
         setContentRequests(data.requests);
+      } else {
+        alert('Error: ' + (data.error || data.message));
       }
     } catch (error) {
-      console.error('Error fetching content requests:', error);
+      console.error('❌ Error fetching content requests:', error);
+      alert('Failed to fetch content: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -50,22 +114,33 @@ const Admin: FunctionComponent = () => {
 
   const handleApprove = async (contentId: string) => {
     try {
-      const response = await fetch(`/api/admin/content/approve/${contentId}`, {
+      const token = localStorage.getItem('token');
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      
+      const response = await fetch(`${API_URL}/admin/content/approve/${contentId}`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error(`❌ Approve error ${response.status}:`, text);
+        throw new Error(`API Error: ${response.status}`);
+      }
+
       const data = await response.json();
       if (data.success) {
         setContentRequests(contentRequests.filter(c => c._id !== contentId));
-        alert('Content approved successfully');
+        alert('✅ Content approved successfully');
       } else {
-        alert('Error: ' + data.message);
+        alert('❌ Error: ' + data.message);
       }
     } catch (error) {
-      console.error('Error approving content:', error);
-      alert('Error approving content');
+      console.error('❌ Error approving content:', error);
+      alert('Error approving content: ' + error.message);
     }
   };
 
@@ -74,23 +149,34 @@ const Admin: FunctionComponent = () => {
     if (!reason) return;
 
     try {
-      const response = await fetch(`/api/admin/content/reject/${contentId}`, {
+      const token = localStorage.getItem('token');
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      
+      const response = await fetch(`${API_URL}/admin/content/reject/${contentId}`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify({ rejectionReason: reason }),
       });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error(`❌ Reject error ${response.status}:`, text);
+        throw new Error(`API Error: ${response.status}`);
+      }
+
       const data = await response.json();
       if (data.success) {
         setContentRequests(contentRequests.filter(c => c._id !== contentId));
-        alert('Content rejected successfully');
+        alert('✅ Content rejected successfully');
       } else {
-        alert('Error: ' + data.message);
+        alert('❌ Error: ' + data.message);
       }
     } catch (error) {
-      console.error('Error rejecting content:', error);
-      alert('Error rejecting content');
+      console.error('❌ Error rejecting content:', error);
+      alert('Error rejecting content: ' + error.message);
     }
   };
 
@@ -103,6 +189,7 @@ const Admin: FunctionComponent = () => {
   const videoRequests = contentRequests.filter(c => c.contentType === 'video');
   const audioRequests = contentRequests.filter(c => c.contentType === 'audio');
   const blogRequests = contentRequests.filter(c => c.contentType === 'blog');
+
 
   return (
     <div className={styles.admin}>
@@ -196,7 +283,7 @@ const Admin: FunctionComponent = () => {
                         <span className={styles.badge}>VIDEO</span>
                       </div>
                       <div className={styles.contentMeta}>
-                        <p><strong>By:</strong> @{content.user.username}</p>
+                        <p><strong>By:</strong> @{content.user?.username || 'Unknown User'}</p>
                         <p><strong>Submitted:</strong> {new Date(content.submittedAt).toLocaleDateString()}</p>
                       </div>
                       <div className={styles.contentActions}>
@@ -238,7 +325,7 @@ const Admin: FunctionComponent = () => {
                         <span className={styles.badge}>AUDIO</span>
                       </div>
                       <div className={styles.contentMeta}>
-                        <p><strong>By:</strong> @{content.user.username}</p>
+                        <p><strong>By:</strong> @{content.user?.username || 'Unknown User'}</p>
                         <p><strong>Submitted:</strong> {new Date(content.submittedAt).toLocaleDateString()}</p>
                       </div>
                       <div className={styles.contentActions}>
@@ -280,7 +367,7 @@ const Admin: FunctionComponent = () => {
                         <span className={styles.badge}>BLOG</span>
                       </div>
                       <div className={styles.contentMeta}>
-                        <p><strong>By:</strong> @{content.user.username}</p>
+                        <p><strong>By:</strong> @{content.user?.username || 'Unknown User'}</p>
                         <p><strong>Submitted:</strong> {new Date(content.submittedAt).toLocaleDateString()}</p>
                       </div>
                       <div className={styles.contentActions}>

@@ -6,6 +6,7 @@
   min-height: 100vh;
   background-color: #f5f5f5;
   font-family: 'Poppins', sans-serif;
+  height: 100vh;
 }
 
 /* Navbar Header - Same as HomePage */
@@ -91,6 +92,7 @@
   display: flex;
   flex: 1;
   gap: 0;
+  min-height: 0;
 }
 
 /* Sidebar */
@@ -101,6 +103,7 @@
   padding: 2rem 1.5rem;
   border-right: 1px solid #0f172a;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .sidebarHeader {
@@ -177,6 +180,8 @@
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
+  min-height: 0;
+  background-color: #f5f5f5;
 }
 
 .section {
