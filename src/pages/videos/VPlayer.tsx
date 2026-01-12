@@ -99,7 +99,7 @@ const VPlayer = () => {
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   
-  const [videoData, setVideoData] = useState(defaultVideoData);
+  const [videoData, setVideoData] = useState<typeof defaultVideoData | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -108,6 +108,8 @@ const VPlayer = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [showDescription, setShowDescription] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [relatedVideos, setRelatedVideos] = useState(defaultRelatedVideos);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -130,9 +132,15 @@ const VPlayer = () => {
   useEffect(() => {
     const fetchVideo = async () => {
       if (!id) {
+        setError('No video ID provided');
         setLoading(false);
         return;
       }
+      
+      // Clear previous data
+      setVideoData(null);
+      setError(null);
+      
       try {
         setLoading(true);
         console.log('📹 Fetching video with ID:', id);
@@ -152,7 +160,9 @@ const VPlayer = () => {
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           console.error('❌ Video fetch failed:', errorData);
-          throw new Error(errorData.error || 'Video not found');
+          const errorMessage = errorData.error || errorData.message || 'Video not found';
+          setError(errorMessage);
+          throw new Error(errorMessage);
         }
         
         const data = await response.json();
@@ -186,13 +196,16 @@ const VPlayer = () => {
             videoUrl: video.videoUrl || '',
             thumbnailUrl: video.thumbnailUrl || '',
           });
+          setError(null);
         } else {
           console.error('❌ Invalid response format:', data);
-          // Keep default data but show error
+          setError('Invalid response from server');
         }
       } catch (error) {
         console.error('❌ Error fetching video:', error);
-        // Keep default data on error
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load video';
+        setError(errorMessage);
+        setVideoData(null);
       } finally {
         setLoading(false);
       }
@@ -243,11 +256,29 @@ const VPlayer = () => {
       <div className={styles.mainContent}>
         {/* Video Section */}
         <div className={styles.videoSection}>
-          {/* Video Player */}
-          <div className={styles.videoContainer} ref={videoContainerRef}>
+          {/* Loading State */}
+          {loading && (
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+              <p>Loading video...</p>
+            </div>
+          )}
+          
+          {/* Error State */}
+          {error && !loading && (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'red' }}>
+              <p>❌ {error}</p>
+              <button onClick={() => window.location.reload()}>Retry</button>
+            </div>
+          )}
+          
+          {/* Video Content - Only show when data is loaded */}
+          {!loading && !error && videoData && (
+            <>
+              {/* Video Player */}
+              <div className={styles.videoContainer} ref={videoContainerRef}>
             <div className={styles.videoBackground}>
               {/* Video Player */}
-              {videoData.videoUrl ? (
+              {videoData && videoData.videoUrl ? (
                 <video
                   ref={videoRef}
                   src={videoData.videoUrl}
@@ -271,7 +302,7 @@ const VPlayer = () => {
               )}
               
               {/* Play/Pause Button */}
-              {!videoData.videoUrl && (
+              {(!videoData || !videoData.videoUrl) && (
                 <button className={styles.playButton} onClick={handlePlayPause}>
                   <span className="material-icons">
                     {isPlaying ? 'pause' : 'play_arrow'}
@@ -336,68 +367,70 @@ const VPlayer = () => {
           </div>
 
           {/* Video Info */}
-          <div className={styles.videoInfo}>
-            <h1 className={styles.videoTitle}>{videoData.title}</h1>
-            
-            <div className={styles.videoMeta}>
-              <span className={styles.authorInfo}>
-                <div className={styles.authorAvatar} />
-                <span>{videoData.author}</span>
-              </span>
-              <span className={styles.separator}>•</span>
-              <span>{videoData.views} views</span>
-              <span className={styles.separator}>•</span>
-              <span>{videoData.uploadedAt}</span>
-            </div>
-
-            {/* Action Buttons */}
-            <div className={styles.actionButtons}>
-              <button className={styles.actionBtn}>
-                <span>👍</span>
-                <span>{videoData.likes}</span>
-              </button>
-              <button className={styles.actionBtn}>
-                <span>👎</span>
-                <span>Dislike</span>
-              </button>
-              <button className={styles.actionBtn}>
-                <span>💬</span>
-                <span>Comments</span>
-              </button>
-              <button className={styles.actionBtn}>
-                <span>🔗</span>
-                <span>Share</span>
-              </button>
-              <button className={styles.actionBtn}>
-                <span className={styles.ratingStars}>{renderStars(videoData.rating)}</span>
-                <span>{videoData.rating}</span>
-              </button>
-            </div>
-
-            {/* Description */}
-            <div className={styles.descriptionSection}>
-              <button 
-                className={styles.descriptionToggle}
-                onClick={() => setShowDescription(!showDescription)}
-              >
-                {showDescription ? 'Hide description' : 'Show description'}
-                <span className="material-icons">
-                  {showDescription ? 'expand_less' : 'expand_more'}
-                </span>
-              </button>
+          {videoData && (
+            <div className={styles.videoInfo}>
+              <h1 className={styles.videoTitle}>{videoData.title}</h1>
               
-              {showDescription && (
-                <div className={styles.description}>
-                  <p>{videoData.description}</p>
-                  <div className={styles.tags}>
-                    {videoData.tags.map((tag, i) => (
-                      <span key={i} className={styles.tag}>{tag}</span>
-                    ))}
+              <div className={styles.videoMeta}>
+                <span className={styles.authorInfo}>
+                  <div className={styles.authorAvatar} />
+                  <span>{videoData.author}</span>
+                </span>
+                <span className={styles.separator}>•</span>
+                <span>{videoData.views} views</span>
+                <span className={styles.separator}>•</span>
+                <span>{videoData.uploadedAt}</span>
+              </div>
+
+              {/* Action Buttons */}
+              <div className={styles.actionButtons}>
+                <button className={styles.actionBtn}>
+                  <span>👍</span>
+                  <span>{videoData.likes}</span>
+                </button>
+                <button className={styles.actionBtn}>
+                  <span>👎</span>
+                  <span>Dislike</span>
+                </button>
+                <button className={styles.actionBtn}>
+                  <span>💬</span>
+                  <span>Comments</span>
+                </button>
+                <button className={styles.actionBtn}>
+                  <span>🔗</span>
+                  <span>Share</span>
+                </button>
+                <button className={styles.actionBtn}>
+                  <span className={styles.ratingStars}>{renderStars(videoData.rating)}</span>
+                  <span>{videoData.rating}</span>
+                </button>
+              </div>
+
+              {/* Description */}
+              <div className={styles.descriptionSection}>
+                <button 
+                  className={styles.descriptionToggle}
+                  onClick={() => setShowDescription(!showDescription)}
+                >
+                  {showDescription ? 'Hide description' : 'Show description'}
+                  <span className="material-icons">
+                    {showDescription ? 'expand_less' : 'expand_more'}
+                  </span>
+                </button>
+                
+                {showDescription && (
+                  <div className={styles.description}>
+                    <p>{videoData.description}</p>
+                    <div className={styles.tags}>
+                      {videoData.tags.map((tag, i) => (
+                        <span key={i} className={styles.tag}>{tag}</span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Related Videos - Mobile */}
           <div className={styles.relatedVideosMobile}>
@@ -421,6 +454,8 @@ const VPlayer = () => {
               ))}
             </div>
           </div>
+            </>
+          )}
         </div>
 
         {/* Comments Sidebar */}

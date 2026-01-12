@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FunctionComponent } from 'react';
 import styles from '../../styles/BlogSubmit.module.css';
@@ -22,6 +22,17 @@ const BlogSubmit: FunctionComponent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Check authentication on mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (!token || !user) {
+      setError('You must be logged in to submit a blog. Redirecting to login...');
+      setTimeout(() => navigate('/login'), 2000);
+    }
+  }, [navigate]);
+
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && tagInput.trim()) {
       e.preventDefault();
@@ -42,6 +53,14 @@ const BlogSubmit: FunctionComponent = () => {
   const onSubmitClick = useCallback(async () => {
     setError('');
     
+    // Check authentication first
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('You must be logged in to submit a blog. Please login first.');
+      setTimeout(() => navigate('/login'), 2000);
+      return;
+    }
+    
     // Validate form
     if (!title.trim()) {
       setError('Please provide a title for your blog.');
@@ -55,6 +74,7 @@ const BlogSubmit: FunctionComponent = () => {
     setIsSubmitting(true);
 
     try {
+      console.log('📝 Submitting blog...');
       const result = await submissionAPI.submitBlog({
         cover: coverImage || undefined,
         title: title.trim(),
@@ -64,10 +84,26 @@ const BlogSubmit: FunctionComponent = () => {
         blogContent: blogContent.trim(),
       });
 
+      console.log('✅ Blog submitted successfully:', result);
       alert(result.message || 'Blog submitted for approval!');
       navigate('/my-submissions');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit blog');
+      console.error('❌ Blog submission error:', err);
+      let errorMessage = 'Failed to submit blog';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        // Check for authentication errors
+        if (errorMessage.includes('Invalid token') || errorMessage.includes('Not authorized') || errorMessage.includes('401')) {
+          errorMessage = 'Your session has expired. Please login again.';
+          // Clear invalid token
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setTimeout(() => navigate('/login'), 2000);
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
