@@ -20,27 +20,42 @@ const VPortal: FunctionComponent = () => {
     const fetchVideos = async () => {
       try {
         setLoading(true);
+        console.log('📹 Fetching videos from API...');
         const response = await contentAPI.getAll({ type: 'video', limit: 50 });
         console.log('📹 Videos API Response:', response);
         
         // Handle both 'content' and 'data' fields for backward compatibility
         const videosList = response.content || response.data || [];
         
-        if (response.success && videosList.length > 0) {
-          console.log(`✅ Loaded ${videosList.length} videos`);
-          setVideos(videosList);
-          // Get top 6 videos by views/likes for trending
-          const sorted = [...videosList]
-            .sort((a, b) => (b.views || 0) - (a.views || 0))
-            .slice(0, 6);
-          setTrendingVideos(sorted);
+        if (response.success) {
+          if (videosList.length > 0) {
+            console.log(`✅ Loaded ${videosList.length} videos`);
+            setVideos(videosList);
+            // Get top 6 videos by views/likes for trending
+            const sorted = [...videosList]
+              .sort((a, b) => (b.views || 0) - (a.views || 0))
+              .slice(0, 6);
+            setTrendingVideos(sorted);
+          } else {
+            console.log('⚠️ API returned success but no videos found');
+            console.log('Response:', response);
+            setVideos([]);
+            setTrendingVideos([]);
+          }
         } else {
-          console.log('⚠️ No videos found in response');
+          console.error('❌ API returned success: false', response);
           setVideos([]);
           setTrendingVideos([]);
         }
       } catch (error) {
         console.error('❌ Error fetching videos:', error);
+        console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+        // Show user-friendly error message
+        if (error instanceof Error) {
+          if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
+            console.error('💡 Network error - check if backend is running or check API URL');
+          }
+        }
         setVideos([]);
         setTrendingVideos([]);
       } finally {
