@@ -1,5 +1,6 @@
 // API Service for UIU Talent Hunt
-const API_URL = 'https://uiu-talent-hunt-backend.onrender.com/api';
+// Use localhost for development, Render URL for production
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Types
 export interface User {
