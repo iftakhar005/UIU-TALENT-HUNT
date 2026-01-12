@@ -1,4 +1,5 @@
-import { FunctionComponent, useCallback, useState, useEffect } from 'react';
+import type { FunctionComponent } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles/Admin.module.css';
 import { adminAPI } from '../services/api';
