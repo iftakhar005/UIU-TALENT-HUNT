@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
 import useNavbar from '../../hooks/useNavbar';
 import useFooter from '../../hooks/useFooter';
 import styles from '../../styles/HomePage.module.css';
@@ -8,8 +9,21 @@ const imgAudioWave = "https://www.figma.com/api/mcp/asset/b2c3d4e5-f6g7-48h9-i0j
 const imgBlogCircuit = "https://www.figma.com/api/mcp/asset/c3d4e5f6-g7h8-49i0-j1k2-l3m4n5o6p7q8";
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const { Navbar } = useNavbar();
   const { Footer } = useFooter();
+
+  const onVideoClick = useCallback((videoId: number) => {
+    navigate(`/videos/${videoId}`);
+  }, [navigate]);
+
+  const onAudioClick = useCallback((audioId: number) => {
+    navigate(`/audios/${audioId}`);
+  }, [navigate]);
+
+  const onBlogClick = useCallback((blogId: number) => {
+    navigate(`/blogs/${blogId}`);
+  }, [navigate]);
 
   return (
     <div className={styles.home}>
@@ -56,11 +70,16 @@ export default function HomePage() {
           </h2>
           <div className={styles.section}>
             {[
-              { title: "Introduction to AI", desc: "Basics of AI" },
-              { title: "Introduction to A2", desc: "Basics of AI" },
-              { title: "Introduction to AI", desc: "Basics of AI" },
-            ].map((item, i) => (
-              <div key={i} className={styles.backgroundshadow2}>
+              { id: 1, title: "Introduction to AI", desc: "Basics of AI" },
+              { id: 2, title: "Introduction to A2", desc: "Basics of AI" },
+              { id: 3, title: "Introduction to AI", desc: "Basics of AI" },
+            ].map((item) => (
+              <div 
+                key={item.id} 
+                className={styles.backgroundshadow2}
+                onClick={() => onVideoClick(item.id)}
+                style={{ cursor: 'pointer' }}
+              >
                 <img
                   alt={item.title}
                   className={styles.abstractAiGlobeVisualizatio}
@@ -78,11 +97,16 @@ export default function HomePage() {
           </h2>
           <div className={styles.section2}>
             {[
-              { title: "Introduction to AI", author: "Author Name1" },
-              { title: "Introduction to A2", author: "Author Name1" },
-              { title: "Introduction to AI", author: "Author Name2" },
-            ].map((item, i) => (
-              <div key={i} className={styles.backgroundshadow2}>
+              { id: 1, title: "Introduction to AI", author: "Author Name1" },
+              { id: 2, title: "Introduction to A2", author: "Author Name1" },
+              { id: 3, title: "Introduction to AI", author: "Author Name2" },
+            ].map((item) => (
+              <div 
+                key={item.id} 
+                className={styles.backgroundshadow2}
+                onClick={() => onAudioClick(item.id)}
+                style={{ cursor: 'pointer' }}
+              >
                 <img
                   alt={item.title}
                   className={styles.goldAudioWaveform}
@@ -101,19 +125,27 @@ export default function HomePage() {
           <div className={styles.section3}>
             {[
               {
+                id: 1,
                 title: "What is the Circuit Chars for AI",
                 desc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore",
               },
               {
+                id: 2,
                 title: "Shield Team Digitasi Ciavinimints?",
                 desc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore",
               },
               {
+                id: 3,
                 title: "AI Knowledges for AI Innovative Networks",
                 desc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore",
               },
-            ].map((item, i) => (
-              <div key={i} className={styles.backgroundshadow8}>
+            ].map((item) => (
+              <div 
+                key={item.id} 
+                className={styles.backgroundshadow8}
+                onClick={() => onBlogClick(item.id)}
+                style={{ cursor: 'pointer' }}
+              >
                 <img
                   alt={item.title}
                   className={styles.aiTextOnACircuitBoardBac}
@@ -121,7 +153,7 @@ export default function HomePage() {
                 />
                 <h3 className={styles.heading37}>{item.title}</h3>
                 <p className={styles.loremIpsumDolor}>{item.desc}</p>
-                <a href="#" className={styles.link4}>
+                <a href="#" className={styles.link4} onClick={(e) => e.preventDefault()}>
                   <span className={styles.readMore}>Read More</span>
                   <span className="material-icons" style={{ fontSize: '16px' }}>
                     arrow_forward

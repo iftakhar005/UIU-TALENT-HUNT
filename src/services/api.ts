@@ -210,6 +210,14 @@ export const authAPI = {
     });
   },
 
+  // Verify admin email code after login
+  verifyAdminEmail: async (email: string, code: string): Promise<AuthResponse> => {
+    return request<AuthResponse>('/auth/verify-admin-email', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    });
+  },
+
   // Get current user
   getMe: async (): Promise<{ success: boolean; user: User }> => {
     return request('/auth/me');
