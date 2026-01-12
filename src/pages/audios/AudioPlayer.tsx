@@ -80,8 +80,6 @@ const AudioPlayer = () => {
             src={audioData.audioUrl}
             controls
             style={{ width: '100%' }}
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
           />
         </div>
 

@@ -108,7 +108,6 @@ const VPlayer = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [showDescription, setShowDescription] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [relatedVideos, setRelatedVideos] = useState(defaultRelatedVideos);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);

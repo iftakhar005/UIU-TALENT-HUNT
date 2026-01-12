@@ -131,10 +131,21 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
-    const data = await response.json();
+    
+    // Try to parse JSON, but handle non-JSON responses
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      const text = await response.text();
+      throw new Error(`Server error (${response.status}): ${text || response.statusText}`);
+    }
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Something went wrong');
+      // Include more details from the error response
+      const errorMessage = data.message || data.error || `HTTP ${response.status}: ${response.statusText}`;
+      const errorDetails = data.details || data.error;
+      throw new Error(errorDetails ? `${errorMessage} - ${errorDetails}` : errorMessage);
     }
 
     return data;

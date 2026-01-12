@@ -1,6 +1,8 @@
-import { FunctionComponent, useCallback, useState, useEffect } from 'react';
+import type { FunctionComponent } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles/Admin.module.css';
+import { adminAPI } from '../services/api';
 
 interface ContentRequest {
   _id: string;
@@ -84,29 +86,21 @@ const Admin: FunctionComponent = () => {
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${API_URL}/admin/content/pending`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        console.error(`❌ API Error ${response.status}:`, text);
-        throw new Error(`API Error: ${response.status}`);
-      }
-
-      const data = await response.json();
+      console.log('📋 Fetching pending content...');
+      const data = await adminAPI.getPending();
+      
       if (data.success) {
-        setContentRequests(data.requests);
+        console.log('✅ Loaded', data.requests?.length || 0, 'pending content requests');
+        setContentRequests(data.requests || []);
       } else {
-        alert('Error: ' + (data.error || data.message));
+        console.error('❌ API returned success: false', data);
+        alert('Error: ' + (data.error || data.message || 'Failed to fetch content'));
       }
     } catch (error) {
       console.error('❌ Error fetching content requests:', error);
-      alert('Failed to fetch content: ' + error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch content';
+      console.error('Error details:', error);
+      alert('Failed to fetch content: ' + errorMessage);
     } finally {
       setLoading(false);
     }
@@ -114,33 +108,35 @@ const Admin: FunctionComponent = () => {
 
   const handleApprove = async (contentId: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      console.log('✅ Approving content:', contentId);
+      const data = await adminAPI.approve(contentId);
+      console.log('📋 Approve response:', data);
       
-      const response = await fetch(`${API_URL}/admin/content/approve/${contentId}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        console.error(`❌ Approve error ${response.status}:`, text);
-        throw new Error(`API Error: ${response.status}`);
-      }
-
-      const data = await response.json();
       if (data.success) {
         setContentRequests(contentRequests.filter(c => c._id !== contentId));
         alert('✅ Content approved successfully');
       } else {
-        alert('❌ Error: ' + data.message);
+        console.error('❌ Approve failed:', data);
+        alert('❌ Error: ' + (data.message || data.error || 'Failed to approve content'));
       }
     } catch (error) {
       console.error('❌ Error approving content:', error);
-      alert('Error approving content: ' + error.message);
+      console.error('❌ Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        error: error
+      });
+      
+      let errorMessage = 'Failed to approve content';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        // Check if it's a network error
+        if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
+          errorMessage = 'Network error - check if backend is running and accessible';
+        }
+      }
+      
+      alert('Error approving content: ' + errorMessage);
     }
   };
 
@@ -149,34 +145,19 @@ const Admin: FunctionComponent = () => {
     if (!reason) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      console.log('❌ Rejecting content:', contentId);
+      const data = await adminAPI.reject(contentId, reason);
       
-      const response = await fetch(`${API_URL}/admin/content/reject/${contentId}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ rejectionReason: reason }),
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        console.error(`❌ Reject error ${response.status}:`, text);
-        throw new Error(`API Error: ${response.status}`);
-      }
-
-      const data = await response.json();
       if (data.success) {
         setContentRequests(contentRequests.filter(c => c._id !== contentId));
         alert('✅ Content rejected successfully');
       } else {
-        alert('❌ Error: ' + data.message);
+        alert('❌ Error: ' + (data.message || 'Failed to reject content'));
       }
     } catch (error) {
       console.error('❌ Error rejecting content:', error);
-      alert('Error rejecting content: ' + error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reject content';
+      alert('Error rejecting content: ' + errorMessage);
     }
   };
 
