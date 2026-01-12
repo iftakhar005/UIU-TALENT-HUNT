@@ -27,8 +27,6 @@ const Blogs = () => {
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Fallback articles
   const fallbackArticles: Blog[] = [
