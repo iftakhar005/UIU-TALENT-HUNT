@@ -161,19 +161,35 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 async function uploadRequest<T>(endpoint: string, formData: FormData): Promise<T> {
   const token = localStorage.getItem('token');
   
+  if (!token) {
+    throw new Error('Not authorized. Please login.');
+  }
+  
   try {
+    console.log('📤 Uploading to:', `${API_URL}${endpoint}`);
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'POST',
       headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
+        Authorization: `Bearer ${token}`,
+        // Don't set Content-Type for FormData - browser will set it with boundary
       },
       body: formData,
     });
     
-    const data = await response.json();
+    // Try to parse JSON, but handle non-JSON responses
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      const text = await response.text();
+      throw new Error(`Server error (${response.status}): ${text || response.statusText}`);
+    }
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Upload failed');
+      // Include more details from the error response
+      const errorMessage = data.message || data.error || `HTTP ${response.status}: ${response.statusText}`;
+      const errorDetails = data.details || data.error;
+      throw new Error(errorDetails ? `${errorMessage} - ${errorDetails}` : errorMessage);
     }
 
     return data;

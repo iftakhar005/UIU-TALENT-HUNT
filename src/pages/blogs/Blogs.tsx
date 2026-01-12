@@ -71,12 +71,9 @@ const Blogs = () => {
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
         setBlogs(data.data && data.data.length > 0 ? data.data : fallbackArticles);
-        setError(null);
       } catch (err) {
         console.error('Error:', err);
         setBlogs(fallbackArticles);
-      } finally {
-        setLoading(false);
       }
     };
 
