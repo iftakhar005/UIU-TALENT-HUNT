@@ -1,12 +1,12 @@
-import { useState, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import useNavbar from '../../hooks/useNavbar';
 import useFooter from '../../hooks/useFooter';
 import useTabNavigation from '../../hooks/useTabNavigation';
 import styles from '../../styles/VPlayer.module.css';
 
-// Mock video data
-const videoData = {
+// Mock video data - fallback
+const defaultVideoData = {
   id: '1',
   title: 'Quantum Superposition Explained in 5 Minutes',
   author: 'Manab',
@@ -15,22 +15,14 @@ const videoData = {
   uploadedAt: '3 hours ago',
   likes: '2.3K',
   rating: 4.8,
-  description: `In this video, I break down the concept of quantum superposition in a way that's easy to understand. 
-  
-We'll explore how particles can exist in multiple states simultaneously and what this means for the future of computing and our understanding of reality.
-
-Topics covered:
-• What is superposition?
-• Schrödinger's cat explained
-• Real-world applications
-• Quantum computing implications
-
-Don't forget to like and subscribe for more physics content!`,
+  description: `In this video, I break down the concept of quantum superposition in a way that's easy to understand.`,
   tags: ['#physics', '#quantum', '#science', '#education'],
   duration: '5:23',
+  videoUrl: '',
+  thumbnailUrl: '',
 };
 
-const comments = [
+const defaultComments = [
   {
     id: 1,
     author: 'Kalam',
@@ -65,7 +57,7 @@ const comments = [
   },
 ];
 
-const relatedVideos = [
+const defaultRelatedVideos = [
   {
     id: '2',
     title: 'Quantum Entanglement: The Spooky Connection',
@@ -102,19 +94,113 @@ const relatedVideos = [
 
 const VPlayer = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const { Navbar } = useNavbar();
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   
+  const [videoData, setVideoData] = useState(defaultVideoData);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(37);
-  const [duration] = useState(323);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(80);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [showDescription, setShowDescription] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [relatedVideos, setRelatedVideos] = useState(defaultRelatedVideos);
   const videoContainerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleVideoClick = (videoId: string) => {
+    navigate(`/videos/${videoId}`);
+  };
+
+  const renderStars = (rating: number) => {
+    return '★'.repeat(Math.round(rating));
+  };
+
+  const formatDuration = (seconds?: number) => {
+    if (!seconds) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  useEffect(() => {
+    const fetchVideo = async () => {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        console.log('📹 Fetching video with ID:', id);
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
+        
+        // Try portal route first, fallback to content route
+        let response = await fetch(`${apiUrl}/videos/${id}`);
+        console.log('📹 Portal route response status:', response.status);
+        
+        // If portal route fails, try content route
+        if (!response.ok) {
+          console.log('📹 Trying content route instead...');
+          response = await fetch(`${apiUrl}/content/${id}`);
+          console.log('📹 Content route response status:', response.status);
+        }
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('❌ Video fetch failed:', errorData);
+          throw new Error(errorData.error || 'Video not found');
+        }
+        
+        const data = await response.json();
+        console.log('📹 Video data received:', data);
+        
+        if (data.success && data.data) {
+          const video = data.data;
+          console.log('✅ Setting video data:', {
+            title: video.title,
+            videoUrl: video.videoUrl,
+            thumbnailUrl: video.thumbnailUrl,
+            views: video.views,
+            likes: Array.isArray(video.likes) ? video.likes.length : video.likes
+          });
+          
+          const videoDuration = video.duration || 0;
+          setDuration(videoDuration);
+          
+          setVideoData({
+            id: video._id,
+            title: video.title || 'Untitled Video',
+            author: video.user?.fullName || video.user?.username || 'Unknown',
+            authorHandle: `@${video.user?.username || 'unknown'}`,
+            views: `${(video.views || 0).toLocaleString()}`,
+            uploadedAt: video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Unknown date',
+            likes: `${(Array.isArray(video.likes) ? video.likes.length : video.likes || 0).toLocaleString()}`,
+            rating: video.rating || 4.8,
+            description: video.description || 'No description available',
+            tags: Array.isArray(video.tags) ? video.tags : [],
+            duration: formatDuration(videoDuration),
+            videoUrl: video.videoUrl || '',
+            thumbnailUrl: video.thumbnailUrl || '',
+          });
+        } else {
+          console.error('❌ Invalid response format:', data);
+          // Keep default data but show error
+        }
+      } catch (error) {
+        console.error('❌ Error fetching video:', error);
+        // Keep default data on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVideo();
+  }, [id]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -150,19 +236,6 @@ const VPlayer = () => {
     }
   }, [commentText]);
 
-  const handleVideoClick = useCallback((videoId: string) => {
-    navigate(`/videos/${videoId}`);
-  }, [navigate]);
-
-  const renderStars = (rating: number) => {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    let stars = '★'.repeat(fullStars);
-    if (hasHalfStar && fullStars < 5) stars += '☆';
-    stars += '☆'.repeat(5 - fullStars - (hasHalfStar ? 1 : 0));
-    return stars;
-  };
-
   return (
     <div className={styles.vPlayer}>
       <Navbar />
@@ -174,15 +247,38 @@ const VPlayer = () => {
           {/* Video Player */}
           <div className={styles.videoContainer} ref={videoContainerRef}>
             <div className={styles.videoBackground}>
-              {/* Video thumbnail/placeholder */}
-              <div className={styles.videoOverlay} />
+              {/* Video Player */}
+              {videoData.videoUrl ? (
+                <video
+                  ref={videoRef}
+                  src={videoData.videoUrl}
+                  poster={videoData.thumbnailUrl}
+                  controls
+                  className={styles.videoElement}
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000' }}
+                  onLoadedMetadata={(e) => {
+                    const video = e.currentTarget;
+                    setDuration(video.duration);
+                  }}
+                  onTimeUpdate={(e) => {
+                    const video = e.currentTarget;
+                    setCurrentTime(video.currentTime);
+                  }}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                />
+              ) : (
+                <div className={styles.videoOverlay} />
+              )}
               
               {/* Play/Pause Button */}
-              <button className={styles.playButton} onClick={handlePlayPause}>
-                <span className="material-icons">
-                  {isPlaying ? 'pause' : 'play_arrow'}
-                </span>
-              </button>
+              {!videoData.videoUrl && (
+                <button className={styles.playButton} onClick={handlePlayPause}>
+                  <span className="material-icons">
+                    {isPlaying ? 'pause' : 'play_arrow'}
+                  </span>
+                </button>
+              )}
 
               {/* Cast Button */}
               <button className={styles.castButton}>
@@ -308,7 +404,7 @@ const VPlayer = () => {
           <div className={styles.relatedVideosMobile}>
             <h3 className={styles.sectionTitle}>Related Videos</h3>
             <div className={styles.relatedGrid}>
-              {relatedVideos.map((video) => (
+              {defaultRelatedVideos.map((video) => (
                 <div 
                   key={video.id} 
                   className={styles.relatedCard}
@@ -332,14 +428,14 @@ const VPlayer = () => {
         <aside className={styles.commentsSidebar}>
           <div className={styles.commentsHeader}>
             <h2>Comments</h2>
-            <span className={styles.commentCount}>({comments.length})</span>
+            <span className={styles.commentCount}>({defaultComments.length})</span>
             <button className={styles.sortButton}>
               Top comments ▼
             </button>
           </div>
 
           <div className={styles.commentsList}>
-            {comments.map((comment) => (
+            {defaultComments.map((comment) => (
               <div key={comment.id} className={styles.comment}>
                 <div 
                   className={styles.commentAvatar}
@@ -386,7 +482,7 @@ const VPlayer = () => {
           {/* Related Videos - Desktop */}
           <div className={styles.relatedVideosDesktop}>
             <h3 className={styles.sectionTitle}>Up Next</h3>
-            {relatedVideos.slice(0, 3).map((video) => (
+            {relatedVideos && relatedVideos.length > 0 && relatedVideos.slice(0, 3).map((video) => (
               <div 
                 key={video.id} 
                 className={styles.relatedCardSmall}
