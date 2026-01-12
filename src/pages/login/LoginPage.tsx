@@ -29,7 +29,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [requiresVerification, setRequiresVerification] = useState(false);
   const [adminEmail, setAdminEmail] = useState("");
-  const [adminToken, setAdminToken] = useState("");
   const [adminUser, setAdminUser] = useState<LoginResponse['user'] | null>(null);
 
   const onLoginClick = useCallback(async () => {
@@ -49,7 +48,6 @@ export default function LoginPage() {
       if (response.requiresVerification) {
         setRequiresVerification(true);
         setAdminEmail(response.user.email);
-        setAdminToken(response.token);
         setAdminUser(response.user);
         // Show test code in development if available
         if (response.testCode) {
@@ -61,7 +59,11 @@ export default function LoginPage() {
       }
 
       // Save auth data
-      authAPI.saveAuth(response.token, response.user);
+      const user = {
+        ...response.user,
+        role: (response.user.role as 'user' | 'admin' | 'judge') || 'user'
+      };
+      authAPI.saveAuth(response.token, user);
 
       // Navigate to dashboard or redirect based on user role
       if (response.redirect) {
@@ -95,7 +97,11 @@ export default function LoginPage() {
       ) as LoginResponse;
 
       // Save auth data
-      authAPI.saveAuth(response.token, response.user);
+      const user = {
+        ...response.user,
+        role: (response.user.role as 'user' | 'admin' | 'judge') || 'user'
+      };
+      authAPI.saveAuth(response.token, user);
 
       // Navigate to admin dashboard
       navigate(response.redirect || "/admin");
@@ -115,7 +121,6 @@ export default function LoginPage() {
     setPassword("");
     setError("");
     setAdminEmail("");
-    setAdminToken("");
     setAdminUser(null);
   }, []);
 

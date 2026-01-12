@@ -94,7 +94,10 @@ const Admin: FunctionComponent = () => {
         setContentRequests(data.requests || []);
       } else {
         console.error('❌ API returned success: false', data);
-        alert('Error: ' + (data.error || data.message || 'Failed to fetch content'));
+        const errorMsg = typeof data === 'object' && data !== null && 'message' in data 
+          ? (data as any).message 
+          : 'Failed to fetch content';
+        alert('Error: ' + errorMsg);
       }
     } catch (error) {
       console.error('❌ Error fetching content requests:', error);
@@ -117,7 +120,10 @@ const Admin: FunctionComponent = () => {
         alert('✅ Content approved successfully');
       } else {
         console.error('❌ Approve failed:', data);
-        alert('❌ Error: ' + (data.message || data.error || 'Failed to approve content'));
+        const errorMsg = typeof data === 'object' && data !== null && 'message' in data
+          ? (data as any).message
+          : 'Failed to approve content';
+        alert('❌ Error: ' + errorMsg);
       }
     } catch (error) {
       console.error('❌ Error approving content:', error);

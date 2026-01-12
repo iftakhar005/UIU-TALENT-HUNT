@@ -47,7 +47,11 @@ const MySubmissions: FunctionComponent = () => {
       });
       
       setSubmissions(result.submissions);
-      setPagination(result.pagination);
+      setPagination({
+        currentPage: result.pagination.page,
+        totalPages: result.pagination.pages,
+        totalItems: result.pagination.total
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch submissions');
     } finally {
