@@ -15,6 +15,7 @@ import BlogSubmit from './pages/submit/BlogSubmit';
 import MySubmissions from './pages/submissions/MySubmissions';
 import ProfilePage from './pages/profile/Profile';
 import Admin from './pages/Admin';
+import Leaderboard from './pages/leaderboard/Leaderboard';
 import './App.css';
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
         <Route path="/submit/audio" element={<AudioSubmit />} />
         <Route path="/submit/blog" element={<BlogSubmit />} />
         <Route path="/my-submissions" element={<MySubmissions />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
       </Routes>
     </Router>
   );

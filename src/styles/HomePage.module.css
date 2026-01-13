@@ -102,13 +102,11 @@
 }
 
 .button2 {
-  background: linear-gradient(
-    89.67deg,
-    #a0522d 9.62%,
-    #ed6511 44.71%,
-    #f4a460 78.85%,
-    #f5f5dc
-  );
+  background: linear-gradient(89.67deg,
+      #a0522d 9.62%,
+      #ed6511 44.71%,
+      #f4a460 78.85%,
+      #f5f5dc);
 }
 
 .button2:hover {
@@ -138,14 +136,12 @@
 }
 
 .button4 {
-  background: linear-gradient(
-    90deg,
-    #0f0e47 31.73%,
-    #272757 51.44%,
-    #505081 73.08%,
-    #8686ac 87.02%,
-    #999
-  );
+  background: linear-gradient(90deg,
+      #0f0e47 31.73%,
+      #272757 51.44%,
+      #505081 73.08%,
+      #8686ac 87.02%,
+      #999);
   border: 1px solid #bfbfbf;
 }
 
@@ -159,19 +155,43 @@
   color: #fff;
 }
 
+.leaderboardBtn {
+  background-color: #3b82f6;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.leaderboardBtn:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.leaderboardBtn .material-icons {
+  font-size: 20px;
+}
+
+
 /* Hero Section - Full Width */
 .header {
   position: relative;
   width: 100%;
   background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
-    conic-gradient(
-      from 135deg at 50% 50%,
+    conic-gradient(from 135deg at 50% 50%,
       rgba(249, 115, 22, 0.8) -3.46deg,
       #f97316 93.46deg,
       #ff6b00 270deg,
       rgba(249, 115, 22, 0.8) 356.54deg,
-      #f97316 453.46deg
-    );
+      #f97316 453.46deg);
   padding: 60px 40px;
   overflow: hidden;
   text-align: center;

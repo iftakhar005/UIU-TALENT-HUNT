@@ -40,6 +40,10 @@ export default function useNavbar() {
           />
           <span className={`material-icons ${styles.search}`}>search</span>
         </div>
+        <button className={styles.leaderboardBtn} onClick={() => window.location.href = '/leaderboard'}>
+          <span className="material-icons">leaderboard</span>
+          Leaderboard
+        </button>
         {isLoggedIn && (
           <button className={styles.button3} onClick={onSubmitEntryClick}>
             <div className={styles.submitEntry}>Submit Entry</div>
