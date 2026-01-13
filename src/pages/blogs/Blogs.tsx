@@ -119,6 +119,20 @@ const Blogs = () => {
         <div className={styles.articleMeta}>
           <span>by <b>{article.user?.fullName || article.author}</b> • {article.readTime || formatDate(article.createdAt)}</span>
         </div>
+        {article.averageRating > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+            <div style={{ color: '#fbbf24', fontSize: '16px' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span key={star}>
+                  {star <= Math.round(article.averageRating) ? '★' : '☆'}
+                </span>
+              ))}
+            </div>
+            <span style={{ fontSize: '13px', color: '#6b7280' }}>
+              {article.averageRating.toFixed(1)} ({article.totalRatings})
+            </span>
+          </div>
+        )}
         <div className={styles.articleStats}>
           {article.views && <div className={styles.stat}><span className={styles.statIcon}>👁</span><span className={styles.statText}>{article.views} views</span></div>}
           {article.comments && <div className={styles.stat}><span className={styles.statIcon}>💬</span><span className={styles.statText}>{article.comments} comments</span></div>}

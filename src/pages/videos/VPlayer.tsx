@@ -111,6 +111,7 @@ const VPlayer = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [relatedVideos, setRelatedVideos] = useState(defaultRelatedVideos);
+  const [viewCounted, setViewCounted] = useState(false);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -214,15 +215,36 @@ const VPlayer = () => {
     fetchVideo();
   }, [id]);
 
+  // Reset view counted when video changes
+  useEffect(() => {
+    setViewCounted(false);
+  }, [id]);
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handlePlayPause = useCallback(() => {
-    setIsPlaying(!isPlaying);
-  }, [isPlaying]);
+  const handlePlayPause = useCallback(async () => {
+    const newPlayingState = !isPlaying;
+    setIsPlaying(newPlayingState);
+    
+    // Increment view count only once when video starts playing for the first time
+    if (newPlayingState && !viewCounted && id) {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
+        await fetch(`${apiUrl}/videos/${id}/view`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        setViewCounted(true);
+        console.log('✅ View counted for video:', id);
+      } catch (error) {
+        console.error('❌ Error incrementing view:', error);
+      }
+    }
+  }, [isPlaying, viewCounted, id]);
 
   const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -294,7 +316,23 @@ const VPlayer = () => {
                     const video = e.currentTarget;
                     setCurrentTime(video.currentTime);
                   }}
-                  onPlay={() => setIsPlaying(true)}
+                  onPlay={async () => {
+                    setIsPlaying(true);
+                    // Increment view count only once when video starts playing
+                    if (!viewCounted && id) {
+                      try {
+                        const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
+                        await fetch(`${apiUrl}/videos/${id}/view`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' }
+                        });
+                        setViewCounted(true);
+                        console.log('\u2705 View counted for video:', id);
+                      } catch (error) {
+                        console.error('\u274c Error incrementing view:', error);
+                      }
+                    }
+                  }}
                   onPause={() => setIsPlaying(false)}
                 />
               ) : (

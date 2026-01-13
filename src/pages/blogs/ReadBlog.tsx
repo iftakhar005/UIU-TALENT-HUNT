@@ -15,6 +15,13 @@ interface BlogContent {
   reads?: number;
   views?: number;
   readingTime?: number;
+  averageRating?: number;
+  totalRatings?: number;
+  ratings?: Array<{
+    user: string;
+    rating: number;
+    createdAt: string;
+  }>;
   user: {
     _id: string;
     username: string;
@@ -46,6 +53,8 @@ const ReadBlog = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [newComment, setNewComment] = useState('');
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -58,6 +67,18 @@ const ReadBlog = () => {
         
         const data = await response.json();
         setBlog(data.data);
+        
+        // Check if user has already rated this blog
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        if (token && userId && data.data.ratings) {
+          const userRatingObj = data.data.ratings.find(
+            (r: any) => r.user === userId || r.user._id === userId
+          );
+          if (userRatingObj) {
+            setUserRating(userRatingObj.rating);
+          }
+        }
       } catch (err) {
         console.error('Error fetching blog:', err);
         setError('Failed to load blog. Please try again.');
@@ -127,6 +148,40 @@ const ReadBlog = () => {
     }
   };
 
+  const handleRating = async (rating: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to rate this blog');
+        return;
+      }
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/blogs/${id}/rate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ rating })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUserRating(rating);
+        setBlog(data.data);
+        console.log('Rating submitted successfully');
+      } else {
+        alert(data.error || 'Failed to submit rating');
+        console.error('Rating error:', data);
+      }
+    } catch (err) {
+      console.error('Error rating blog:', err);
+      alert('Failed to submit rating. Please try again.');
+    }
+  };
+
   return (
     <div className={styles.readBlog}>
       <Navbar />
@@ -141,6 +196,39 @@ const ReadBlog = () => {
             <p className={styles.meta}>
               By {blog.user.fullName} • Published on {formatDate(blog.createdAt)} • {blog.readingTime || 5} min read
             </p>
+            
+            {/* Rating Display and Input */}
+            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ fontSize: '24px', display: 'flex', gap: '4px' }}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      onClick={() => handleRating(star)}
+                      onMouseEnter={() => setHoverRating(star)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      style={{
+                        cursor: 'pointer',
+                        color: star <= (hoverRating || userRating) ? '#fbbf24' : '#d1d5db',
+                        transition: 'color 0.2s'
+                      }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+                <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                  {blog.averageRating ? (
+                    <span><b>{blog.averageRating.toFixed(1)}</b> ({blog.totalRatings} {blog.totalRatings === 1 ? 'rating' : 'ratings'})</span>
+                  ) : (
+                    <span>No ratings yet</span>
+                  )}
+                </div>
+              </div>
+              {userRating > 0 && (
+                <p style={{ fontSize: '12px', color: '#10b981', margin: 0 }}>✓ You rated this {userRating} star{userRating > 1 ? 's' : ''}</p>
+              )}
+            </div>
           </div>
 
           {/* Featured Image */}

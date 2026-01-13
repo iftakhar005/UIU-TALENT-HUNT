@@ -14,6 +14,7 @@ const VPortal: FunctionComponent = () => {
   const { TabNavigation } = useTabNavigation();
   const [videos, setVideos] = useState<any[]>([]);
   const [trendingVideos, setTrendingVideos] = useState<any[]>([]);
+  const [featuredVideo, setFeaturedVideo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,10 +32,15 @@ const VPortal: FunctionComponent = () => {
           if (videosList.length > 0) {
             console.log(`✅ Loaded ${videosList.length} videos`);
             setVideos(videosList);
-            // Get top 6 videos by views/likes for trending
-            const sorted = [...videosList]
-              .sort((a, b) => (b.views || 0) - (a.views || 0))
-              .slice(0, 6);
+            // Get the best video based on rating and views
+            const sortedByQuality = [...videosList].sort((a, b) => {
+              const scoreA = (a.averageRating || 0) * 10 + (a.views || 0) * 0.01;
+              const scoreB = (b.averageRating || 0) * 10 + (b.views || 0) * 0.01;
+              return scoreB - scoreA;
+            });
+            setFeaturedVideo(sortedByQuality[0]);
+            // Get top 6 videos by views/likes for trending (excluding featured)
+            const sorted = sortedByQuality.slice(1, 7);
             setTrendingVideos(sorted);
           } else {
             console.log('⚠️ API returned success but no videos found');
@@ -69,6 +75,155 @@ const VPortal: FunctionComponent = () => {
   const onVideoClick = useCallback((videoId: string) => {
     navigate(`/videos/${videoId}`);
   }, [navigate]);
+
+  const renderStars = (rating?: number) => {
+    if (!rating) return '☆☆☆☆☆';
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    let stars = '★'.repeat(fullStars);
+    if (hasHalfStar) stars += '☆';
+    stars += '☆'.repeat(5 - fullStars - (hasHalfStar ? 1 : 0));
+    return stars;
+  };
+
+  const renderFeaturedCard = (video: any) => (
+    <div
+      key={video._id}
+      className={styles.featuredCard}
+      onClick={() => onVideoClick(video._id)}
+      style={{
+        position: 'relative',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '32px',
+        marginBottom: '40px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+        transition: 'transform 0.3s ease',
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+    >
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', alignItems: 'center' }}>
+        <div>
+          <div style={{ 
+            display: 'inline-block',
+            backgroundColor: '#fbbf24',
+            color: '#000',
+            padding: '6px 16px',
+            borderRadius: '20px',
+            fontSize: '12px',
+            fontWeight: '700',
+            marginBottom: '16px',
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
+          }}>
+            🏆 Featured Video
+          </div>
+          <h2 style={{ 
+            fontSize: '36px', 
+            fontWeight: '700', 
+            color: '#fff',
+            marginBottom: '16px',
+            lineHeight: '1.2'
+          }}>
+            {video.title}
+          </h2>
+          <p style={{ 
+            fontSize: '16px', 
+            color: 'rgba(255,255,255,0.9)',
+            marginBottom: '24px',
+            lineHeight: '1.6'
+          }}>
+            {video.description || 'An amazing video performance from UIU talent'}
+          </p>
+          <div style={{ display: 'flex', gap: '24px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+              <span style={{ fontSize: '20px' }}>👁</span>
+              <span style={{ fontWeight: '600' }}>{video.views || 0}</span>
+              <span style={{ opacity: 0.8 }}>views</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+              <span style={{ color: '#fbbf24', fontSize: '18px' }}>{renderStars(video.averageRating)}</span>
+              <span style={{ fontWeight: '600' }}>{video.averageRating ? video.averageRating.toFixed(1) : 'New'}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+              <span style={{ fontSize: '18px' }}>💬</span>
+              <span style={{ fontWeight: '600' }}>{video.comments?.length || 0}</span>
+              <span style={{ opacity: 0.8 }}>comments</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div style={{
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              backdropFilter: 'blur(10px)',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: '#fff',
+              fontWeight: '600'
+            }}>
+              <span>🎬 by</span>
+              <span style={{ color: '#fbbf24' }}>@{video.user?.username || 'Unknown'}</span>
+            </div>
+            {video.category && (
+              <div style={{
+                backgroundColor: 'rgba(255,255,255,0.15)',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '14px'
+              }}>
+                {video.category}
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+          {video.thumbnailUrl ? (
+            <img 
+              src={video.thumbnailUrl} 
+              alt={video.title} 
+              style={{ width: '100%', height: '350px', objectFit: 'cover' }}
+            />
+          ) : (
+            <div style={{ 
+              width: '100%', 
+              height: '350px', 
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <span style={{ fontSize: '80px' }}>🎬</span>
+            </div>
+          )}
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '80px',
+            height: '80px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '32px',
+            color: '#667eea',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            cursor: 'pointer'
+          }}>
+            ▶
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   const renderVideoCard = (video: any, isTrending = false) => (
     <div
@@ -105,8 +260,8 @@ const VPortal: FunctionComponent = () => {
             <span>{video.comments?.length || 0} comments</span>
           </div>
           <div className={styles.stat}>
-            <span className={styles.statIcon}>❤️</span>
-            <span>{video.likes?.length || 0} likes</span>
+            <span className={styles.statIcon} style={{ color: '#fbbf24', fontSize: '16px' }}>{renderStars(video.averageRating)}</span>
+            <span>{video.averageRating ? `${video.averageRating.toFixed(1)} rating` : 'No ratings'}</span>
           </div>
         </div>
         {video.tags && video.tags.length > 0 && (
@@ -131,19 +286,10 @@ const VPortal: FunctionComponent = () => {
             <p className={styles.pageDescription}>
               Watch, rate, and discover the best video performances from UIU students. Ratings and views contribute directly to the leaderboard.
             </p>
-              </div>
+          </div>
 
-          {/* Trending Videos Section */}
-          {trendingVideos.length > 0 && (
-            <div className={styles.trendingSection}>
-              <h2 className={styles.sectionTitle}>
-                <span className={styles.trendingBadge}>🔥 Trending Videos</span>
-              </h2>
-              <div className={styles.trendingGrid}>
-                {trendingVideos.map((video) => renderVideoCard(video, true))}
-              </div>
-              </div>
-          )}
+          {/* Featured Video Section */}
+          {featuredVideo && renderFeaturedCard(featuredVideo)}
 
           {/* All Videos Section */}
           <div className={styles.allVideosSection}>

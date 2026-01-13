@@ -5,6 +5,46 @@ import useFooter from '../../hooks/useFooter';
 import useTabNavigation from '../../hooks/useTabNavigation';
 import styles from '../../styles/AudioPlayer.module.css';
 
+interface Comment {
+  _id: string;
+  user: {
+    _id: string;
+    username: string;
+    fullName: string;
+    avatar?: string;
+  };
+  text: string;
+  createdAt: string;
+}
+
+interface AudioData {
+  _id: string;
+  title: string;
+  description?: string;
+  audioUrl: string;
+  thumbnailUrl?: string;
+  duration?: number;
+  user: {
+    _id: string;
+    username: string;
+    fullName: string;
+    avatar?: string;
+    bio?: string;
+  };
+  category?: string;
+  tags?: string[];
+  plays?: number;
+  averageRating?: number;
+  totalRatings?: number;
+  ratings?: Array<{
+    user: string;
+    rating: number;
+    createdAt: string;
+  }>;
+  comments?: Comment[];
+  createdAt: string;
+}
+
 const AudioPlayer = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -12,9 +52,38 @@ const AudioPlayer = () => {
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   
-  const [audioData, setAudioData] = useState<any>(null);
+  const [audioData, setAudioData] = useState<AudioData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [newComment, setNewComment] = useState('');
+  const [playCounted, setPlayCounted] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Track when audio starts playing and increment play count once
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || playCounted || !id) return;
+
+    const handlePlay = async () => {
+      if (!playCounted) {
+        try {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+          await fetch(`${apiUrl}/audios/${id}/play`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          setPlayCounted(true);
+          console.log('\u2705 Play counted for audio:', id);
+        } catch (error) {
+          console.error('\u274c Error incrementing play:', error);
+        }
+      }
+    };
+
+    audio.addEventListener('play', handlePlay);
+    return () => audio.removeEventListener('play', handlePlay);
+  }, [id, playCounted]);
 
   useEffect(() => {
     const fetchAudio = async () => {
@@ -24,14 +93,26 @@ const AudioPlayer = () => {
       }
       try {
         setLoading(true);
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const response = await fetch(`${apiUrl}/api/audios/${id}`);
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${apiUrl}/audios/${id}`);
         
         if (!response.ok) throw new Error('Audio not found');
         
         const data = await response.json();
         if (data.data) {
           setAudioData(data.data);
+          
+          // Check if user has already rated
+          const token = localStorage.getItem('token');
+          const userId = localStorage.getItem('userId');
+          if (token && userId && data.data.ratings) {
+            const userRatingObj = data.data.ratings.find(
+              (r: any) => r.user === userId || r.user._id === userId
+            );
+            if (userRatingObj) {
+              setUserRating(userRatingObj.rating);
+            }
+          }
         }
       } catch (error) {
         console.error('Error fetching audio:', error);
@@ -43,12 +124,100 @@ const AudioPlayer = () => {
     fetchAudio();
   }, [id]);
 
+  // Reset play counted when audio changes
+  useEffect(() => {
+    setPlayCounted(false);
+  }, [id]);
+
+  const handleRating = async (rating: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to rate this audio');
+        return;
+      }
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/audios/${id}/rate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ rating })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUserRating(rating);
+        setAudioData(data.data);
+      } else {
+        alert(data.error || 'Failed to submit rating');
+      }
+    } catch (err) {
+      console.error('Error rating audio:', err);
+      alert('Failed to submit rating. Please try again.');
+    }
+  };
+
+  const handlePostComment = async () => {
+    if (!newComment.trim()) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to comment');
+        return;
+      }
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/audios/${id}/comment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: newComment })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setAudioData(data.data);
+        setNewComment('');
+      } else {
+        alert(data.error || 'Failed to post comment');
+      }
+    } catch (err) {
+      console.error('Error posting comment:', err);
+      alert('Failed to post comment. Please try again.');
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  const timeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return 'just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+    return formatDate(dateString);
+  };
+
   if (loading) {
     return (
       <div className={styles.aPlayer}>
         <Navbar />
         <TabNavigation />
-        <div style={{ padding: '40px', textAlign: 'center' }}>Loading audio...</div>
+        <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>Loading audio...</div>
         <Footer />
       </div>
     );
@@ -59,7 +228,7 @@ const AudioPlayer = () => {
       <div className={styles.aPlayer}>
         <Navbar />
         <TabNavigation />
-        <div style={{ padding: '40px', textAlign: 'center' }}>Audio not found</div>
+        <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>Audio not found</div>
         <Footer />
       </div>
     );
@@ -70,44 +239,277 @@ const AudioPlayer = () => {
       <Navbar />
       <TabNavigation />
       <div className={styles.main}>
-        <h1 className={styles.heading1}>{audioData.title}</h1>
-        <p>By: {audioData.user?.fullName || audioData.user?.username}</p>
-        
-        {/* Audio Player */}
-        <div style={{ margin: '30px 0', backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '10px' }}>
+        {/* Header Section */}
+        <div style={{ marginBottom: '30px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+            <span style={{ 
+              backgroundColor: '#3b82f6', 
+              color: 'white', 
+              padding: '4px 12px', 
+              borderRadius: '4px', 
+              fontSize: '12px',
+              fontWeight: '600'
+            }}>
+              {audioData.category || 'Music'}
+            </span>
+          </div>
+          <h1 className={styles.heading1}>{audioData.title}</h1>
+          <p style={{ color: '#6b7280', fontSize: '14px' }}>
+            By <strong>{audioData.user?.fullName || audioData.user?.username}</strong> • 
+            Published on {formatDate(audioData.createdAt)} • 
+            {audioData.plays || 0} plays
+          </p>
+        </div>
+
+        {/* Cover Image & Audio Player Section */}
+        <div style={{ 
+          backgroundColor: '#f9fafb', 
+          padding: '30px', 
+          borderRadius: '12px',
+          marginBottom: '30px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          {audioData.thumbnailUrl && (
+            <div style={{ 
+              marginBottom: '20px',
+              display: 'flex',
+              justifyContent: 'center'
+            }}>
+              <img 
+                src={audioData.thumbnailUrl} 
+                alt={audioData.title} 
+                style={{ 
+                  maxWidth: '300px',
+                  width: '100%',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                }} 
+              />
+            </div>
+          )}
           <audio
             ref={audioRef}
             src={audioData.audioUrl}
             controls
-            style={{ width: '100%' }}
+            style={{ 
+              width: '100%',
+              outline: 'none'
+            }}
           />
         </div>
 
-        {/* Audio Info */}
-        <div style={{ marginBottom: '20px' }}>
-          {audioData.coverImage && (
-            <img src={audioData.coverImage} alt={audioData.title} style={{ maxWidth: '200px', borderRadius: '8px' }} />
+        {/* Rating Section */}
+        <div style={{ 
+          backgroundColor: 'white',
+          padding: '24px',
+          borderRadius: '12px',
+          marginBottom: '30px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <h3 style={{ marginBottom: '16px', fontSize: '18px', fontWeight: '600' }}>Rate this Audio</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ fontSize: '32px', display: 'flex', gap: '4px' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  onClick={() => handleRating(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  style={{
+                    cursor: 'pointer',
+                    color: star <= (hoverRating || userRating) ? '#fbbf24' : '#d1d5db',
+                    transition: 'color 0.2s'
+                  }}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+            <div style={{ fontSize: '14px', color: '#6b7280' }}>
+              {audioData.averageRating ? (
+                <span><b>{audioData.averageRating.toFixed(1)}</b> ({audioData.totalRatings} {audioData.totalRatings === 1 ? 'rating' : 'ratings'})</span>
+              ) : (
+                <span>No ratings yet</span>
+              )}
+            </div>
+          </div>
+          {userRating > 0 && (
+            <p style={{ fontSize: '12px', color: '#10b981', margin: 0 }}>
+              ✓ You rated this {userRating} star{userRating > 1 ? 's' : ''}
+            </p>
           )}
-          <p><strong>Plays:</strong> {audioData.plays || 0}</p>
-          <p><strong>Duration:</strong> {audioData.duration ? Math.floor(audioData.duration / 60) + ':' + (audioData.duration % 60).toString().padStart(2, '0') : 'N/A'}</p>
-          {audioData.tags && audioData.tags.length > 0 && (
-            <p><strong>Tags:</strong> {audioData.tags.map((tag: string) => `#${tag}`).join(', ')}</p>
-          )}
-          {audioData.description && (
-            <p><strong>Description:</strong> {audioData.description}</p>
+        </div>
+
+        {/* Description Section */}
+        {audioData.description && (
+          <div style={{ 
+            backgroundColor: 'white',
+            padding: '24px',
+            borderRadius: '12px',
+            marginBottom: '30px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ marginBottom: '12px', fontSize: '18px', fontWeight: '600' }}>Description</h3>
+            <p style={{ color: '#4b5563', lineHeight: '1.6' }}>{audioData.description}</p>
+          </div>
+        )}
+
+        {/* Tags */}
+        {audioData.tags && audioData.tags.length > 0 && (
+          <div style={{ marginBottom: '30px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {audioData.tags.map((tag: string, idx: number) => (
+                <span 
+                  key={idx}
+                  style={{
+                    backgroundColor: '#e0e7ff',
+                    color: '#4f46e5',
+                    padding: '6px 12px',
+                    borderRadius: '16px',
+                    fontSize: '13px',
+                    fontWeight: '500'
+                  }}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Author Box */}
+        <div style={{
+          backgroundColor: 'white',
+          padding: '24px',
+          borderRadius: '12px',
+          marginBottom: '30px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          display: 'flex',
+          gap: '16px',
+          alignItems: 'center'
+        }}>
+          <img
+            src={audioData.user.avatar || 'https://via.placeholder.com/64x64'}
+            alt={audioData.user.fullName}
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              objectFit: 'cover'
+            }}
+          />
+          <div>
+            <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>CREATED BY</p>
+            <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>{audioData.user.fullName}</h3>
+            <p style={{ fontSize: '14px', color: '#6b7280' }}>{audioData.user.bio || 'UIU Talent Hunt contributor'}</p>
+          </div>
+        </div>
+
+        {/* Comments Section */}
+        <div style={{
+          backgroundColor: 'white',
+          padding: '24px',
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px' }}>
+            Comments ({audioData.comments?.length || 0})
+          </h2>
+
+          {/* Comment Form */}
+          <div style={{ marginBottom: '30px', display: 'flex', gap: '12px' }}>
+            <img
+              src="https://via.placeholder.com/40x40"
+              alt="Your avatar"
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                flexShrink: 0
+              }}
+            />
+            <div style={{ flex: 1 }}>
+              <textarea
+                placeholder="Add a comment..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                style={{
+                  width: '100%',
+                  minHeight: '80px',
+                  padding: '12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  resize: 'vertical',
+                  fontFamily: 'inherit'
+                }}
+              />
+              <button
+                onClick={handlePostComment}
+                disabled={!newComment.trim()}
+                style={{
+                  marginTop: '8px',
+                  padding: '8px 16px',
+                  backgroundColor: newComment.trim() ? '#3b82f6' : '#d1d5db',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: newComment.trim() ? 'pointer' : 'not-allowed',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                Post Comment
+              </button>
+            </div>
+          </div>
+
+          {/* Comments List */}
+          {audioData.comments && audioData.comments.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {audioData.comments.map((comment) => (
+                <div key={comment._id} style={{ display: 'flex', gap: '12px' }}>
+                  <img 
+                    src={comment.user?.avatar || 'https://via.placeholder.com/40x40'} 
+                    alt={comment.user?.fullName || 'User'} 
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      flexShrink: 0
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <strong style={{ fontSize: '14px' }}>
+                        {comment.user?.fullName || comment.user?.username || 'Anonymous'}
+                      </strong>
+                      <span style={{ fontSize: '12px', color: '#9ca3af' }}>{timeAgo(comment.createdAt)}</span>
+                    </div>
+                    <p style={{ fontSize: '14px', color: '#4b5563', margin: 0 }}>{comment.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ textAlign: 'center', color: '#6b7280', padding: '20px' }}>
+              No comments yet. Be the first to comment!
+            </p>
           )}
         </div>
 
         <button 
           onClick={() => navigate(-1)}
           style={{
-            padding: '10px 20px',
+            padding: '12px 24px',
             backgroundColor: '#ff8a3c',
             color: 'white',
             border: 'none',
-            borderRadius: '5px',
+            borderRadius: '8px',
             cursor: 'pointer',
-            marginTop: '20px'
+            marginTop: '30px',
+            fontSize: '14px',
+            fontWeight: '600'
           }}
         >
           Go Back

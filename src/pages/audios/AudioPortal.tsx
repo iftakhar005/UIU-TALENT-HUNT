@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FunctionComponent } from 'react';
 import styles from '../../styles/AudioPortal.module.css';
@@ -6,15 +6,73 @@ import useNavbar from '../../hooks/useNavbar';
 import useFooter from '../../hooks/useFooter';
 import useTabNavigation from '../../hooks/useTabNavigation';
 
+interface Audio {
+  _id: string;
+  title: string;
+  description?: string;
+  audioUrl: string;
+  thumbnailUrl?: string;
+  duration?: number;
+  user: {
+    _id: string;
+    username: string;
+    fullName: string;
+  };
+  category?: string;
+  plays?: number;
+  comments?: any[];
+  averageRating?: number;
+  totalRatings?: number;
+  createdAt: string;
+}
+
 const AudioPortal: FunctionComponent = () => {
   const { Navbar } = useNavbar();
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   const navigate = useNavigate();
+  const [audios, setAudios] = useState<Audio[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const onAudioClick = useCallback((audioId: number) => {
+  useEffect(() => {
+    const fetchAudios = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${apiUrl}/audios?limit=20&page=1`);
+
+        if (!response.ok) throw new Error('Failed to fetch audios');
+        
+        const data = await response.json();
+        setAudios(data.data || []);
+      } catch (err) {
+        console.error('Error fetching audios:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAudios();
+  }, []);
+
+  const onAudioClick = useCallback((audioId: string) => {
     navigate(`/audios/${audioId}`);
   }, [navigate]);
+
+  const formatPlays = (plays?: number) => {
+    if (!plays) return '0 plays';
+    if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K plays`;
+    return `${plays} plays`;
+  };
+
+  const renderStars = (rating?: number) => {
+    if (!rating) return '☆☆☆☆☆';
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    let stars = '★'.repeat(fullStars);
+    if (hasHalfStar) stars += '☆';
+    stars += '☆'.repeat(5 - fullStars - (hasHalfStar ? 1 : 0));
+    return stars;
+  };
 
   return (
     <>
@@ -26,198 +84,61 @@ const AudioPortal: FunctionComponent = () => {
             <div className={styles.discoverSongsPodcasts}>Discover songs, podcasts, and spoken word performances from UIU talents. Ratings and plays contribute directly to the leaderboard.</div>
           </div>
           <div className={styles.section}>
-            <div className={styles.article} onClick={() => onAudioClick(1)}>
-              <b className={styles.heading2}>Acoustic Cover of "Wonderwall"</b>
-              <div className={styles.aSoulfulRendition}>A soulful rendition recorded live in the UIU studio – perfect for<br/>a late-night playlist.</div>
-              <div className={styles.byArmanHossainContainer}>
-                <span className={styles.byArmanHossainContainer2}>
-                  <span>{`by `}</span>
-                  <b>Arman Hossain</b>
-                  <span> • Singing / Music</span>
-                </span>
-              </div>
-              <div className={styles.paragraphbackground}>
-                <div className={styles.div}>▶</div>
-                <div className={styles.kPlays}>11.3K plays</div>
-              </div>
-              <div className={styles.paragraphbackground2}>
-                <div className={styles.div2}>💬</div>
-                <div className={styles.comments}>328 comments</div>
-              </div>
-              <div className={styles.paragraphbackground3}>
-                <div className={styles.div3}>★★★★★</div>
-                <div className={styles.rating}>4.8 rating</div>
-              </div>
-              <div className={styles.background2}>
-                <div className={styles.overlay}>
-                  <div className={styles.background3}>
-                    <div className={styles.div4}>▶</div>
+            {loading ? (
+              <p style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>Loading audios...</p>
+            ) : audios.length === 0 ? (
+              <p style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>No audios available yet.</p>
+            ) : (
+              audios.map((audio, index) => (
+                <div 
+                  key={audio._id} 
+                  className={index === 0 ? styles.article : index === 1 ? styles.article2 : styles.article3}
+                  onClick={() => onAudioClick(audio._id)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <b className={index === 0 ? styles.heading2 : index === 1 ? styles.heading22 : styles.heading23}>
+                    {audio.title}
+                  </b>
+                  <div className={index === 0 ? styles.aSoulfulRendition : index === 1 ? styles.aPodcastStyleDiscussion : styles.ambientSoundscapeMixed}>
+                    {audio.description || 'Listen to this amazing audio track'}
                   </div>
-                  <div className={styles.playTrack}>Play track</div>
-                </div>
-                <div className={styles.gradient} />
-              </div>
-            </div>
-            <div className={styles.article2} onClick={() => onAudioClick(2)}>
-              <b className={styles.heading22}>{`AI & Creativity – Campus Talk`}</b>
-              <div className={styles.aPodcastStyleDiscussion}>A podcast-style discussion on how AI tools are reshaping<br/>design, music, and student projects.</div>
-              <div className={styles.byMahiraAkterContainer}>
-                <span className={styles.byArmanHossainContainer2}>
-                  <span>{`by `}</span>
-                  <b>Mahira Akter</b>
-                  <span> • Podcast</span>
-                </span>
-              </div>
-              <div className={styles.paragraphbackground4}>
-                <div className={styles.div}>▶</div>
-                <div className={styles.kPlays2}>9.7K plays</div>
-              </div>
-              <div className={styles.paragraphbackground5}>
-                <div className={styles.div2}>💬</div>
-                <div className={styles.comments2}>190 comments</div>
-              </div>
-              <div className={styles.paragraphbackground6}>
-                <div className={styles.div3}>★★★★☆</div>
-                <div className={styles.rating2}>4.6 rating</div>
-              </div>
-              <div className={styles.background4}>
-                <div className={styles.overlay2}>
-                  <div className={styles.background3}>
-                    <div className={styles.div4}>▶</div>
+                  <div className={index === 0 ? styles.byArmanHossainContainer : index === 1 ? styles.byMahiraAkterContainer : styles.byTanvirRahmanContainer}>
+                    <span className={styles.byArmanHossainContainer2}>
+                      <span>{`by `}</span>
+                      <b>{audio.user.fullName}</b>
+                      <span> • {audio.category || 'Music'}</span>
+                    </span>
                   </div>
-                  <div className={styles.playEpisode}>Play episode</div>
-                </div>
-                <div className={styles.gradient} />
-              </div>
-            </div>
-            <div className={styles.article3} onClick={() => onAudioClick(3)}>
-              <b className={styles.heading23}>Guided Focus – 25 Minute Study Session</b>
-              <div className={styles.ambientSoundscapeMixed}>Ambient soundscape mixed with gentle prompts to help you<br/>stay focused during Pomodoro cycles.</div>
-              <div className={styles.byTanvirRahmanContainer}>
-                <span className={styles.byArmanHossainContainer2}>
-                  <span>{`by `}</span>
-                  <b>Tanvir Rahman</b>
-                  <span> • Instrumental / Ambient</span>
-                </span>
-              </div>
-              <div className={styles.paragraphbackground4}>
-                <div className={styles.div9}>▶</div>
-                <div className={styles.kPlays2}>5.8K plays</div>
-              </div>
-              <div className={styles.paragraphbackground5}>
-                <div className={styles.div2}>💬</div>
-                <div className={styles.comments3}>142 comments</div>
-              </div>
-              <div className={styles.paragraphbackground6}>
-                <div className={styles.div3}>★★★★★</div>
-                <div className={styles.rating2}>4.9 rating</div>
-              </div>
-              <div className={styles.background2}>
-                <div className={styles.overlay3}>
-                  <div className={styles.background3}>
-                    <div className={styles.div12}>▶</div>
+                  <div className={index === 0 ? styles.paragraphbackground : styles.paragraphbackground4}>
+                    <div className={styles.div}>▶</div>
+                    <div className={index === 0 ? styles.kPlays : styles.kPlays2}>{formatPlays(audio.plays)}</div>
                   </div>
-                  <div className={styles.listenNow}>Listen now</div>
-                </div>
-                <div className={styles.gradient} />
-              </div>
-            </div>
-            <div className={styles.article4} onClick={() => onAudioClick(4)}>
-              <b className={styles.heading24}>My Journey Through Spoken Word</b>
-              <div className={styles.aPowerfulPerformance}>A powerful performance about growing up, finding voice, and<br/>standing on the UIU stage for the first time.</div>
-              <div className={styles.byNafisaRahmanContainer}>
-                <span className={styles.byArmanHossainContainer2}>
-                  <span>{`by `}</span>
-                  <b>Nafisa Rahman</b>
-                  <span> • Spoken Word</span>
-                </span>
-              </div>
-              <div className={styles.paragraphbackground4}>
-                <div className={styles.div9}>▶</div>
-                <div className={styles.kPlays4}>7.6K plays</div>
-              </div>
-              <div className={styles.paragraphbackground5}>
-                <div className={styles.div2}>💬</div>
-                <div className={styles.comments4}>211 comments</div>
-              </div>
-              <div className={styles.paragraphbackground12}>
-                <div className={styles.div3}>★★★★☆</div>
-                <div className={styles.rating}>4.7 rating</div>
-              </div>
-              <div className={styles.background2}>
-                <div className={styles.overlay4}>
-                  <div className={styles.background3}>
-                    <div className={styles.div4}>▶</div>
+                  <div className={index === 0 ? styles.paragraphbackground2 : styles.paragraphbackground5}>
+                    <div className={styles.div2}>💬</div>
+                    <div className={index === 0 ? styles.comments : index === 1 ? styles.comments2 : styles.comments3}>
+                      {audio.comments?.length || 0} comments
+                    </div>
                   </div>
-                  <div className={styles.spokenWord}>Spoken word</div>
-                </div>
-                <div className={styles.gradient} />
-              </div>
-            </div>
-            <div className={styles.article5} onClick={() => onAudioClick(5)}>
-              <b className={styles.heading25}>"Creative Minds" – Episode 03</b>
-              <div className={styles.aRoundTableConversation}>A round-table conversation with student filmmakers on how<br/>they plan, shoot, and edit UIU short films.</div>
-              <div className={styles.byCampusMediaContainer}>
-                <span className={styles.byArmanHossainContainer2}>
-                  <span>{`by `}</span>
-                  <b>Campus Media Club</b>
-                  <span> • Podcast Panel</span>
-                </span>
-              </div>
-              <div className={styles.paragraphbackground4}>
-                <div className={styles.div9}>▶</div>
-                <div className={styles.kPlays5}>6.1K plays</div>
-              </div>
-              <div className={styles.paragraphbackground5}>
-                <div className={styles.div2}>💬</div>
-                <div className={styles.comments5}>175 comments</div>
-              </div>
-              <div className={styles.paragraphbackground6}>
-                <div className={styles.div3}>★★★★☆</div>
-                <div className={styles.rating2}>4.5 rating</div>
-              </div>
-              <div className={styles.background2}>
-                <div className={styles.overlay2}>
-                  <div className={styles.background3}>
-                    <div className={styles.div4}>▶</div>
+                  <div className={index === 0 ? styles.paragraphbackground3 : styles.paragraphbackground6}>
+                    <div className={styles.div3}>{renderStars(audio.averageRating)}</div>
+                    <div className={index === 0 ? styles.rating : styles.rating2}>
+                      {audio.averageRating ? `${audio.averageRating.toFixed(1)} rating` : 'No ratings'}
+                    </div>
                   </div>
-                  <div className={styles.playEpisode}>Play episode</div>
-                </div>
-                <div className={styles.gradient} />
-              </div>
-            </div>
-            <div className={styles.article6} onClick={() => onAudioClick(6)}>
-              <b className={styles.heading26}>Last Bus from UIU – Audio Story</b>
-              <div className={styles.aCinematicAudio}>A cinematic audio drama following four friends trying to catch<br/>the last bus home after a long exam day.</div>
-              <div className={styles.byDramaContainer}>
-                <span className={styles.byArmanHossainContainer2}>
-                  <span>{`by `}</span>
-                  <b>{`Drama & Media Society`}</b>
-                  <span> • Audio Drama</span>
-                </span>
-              </div>
-              <div className={styles.paragraphbackground4}>
-                <div className={styles.div9}>▶</div>
-                <div className={styles.kPlays6}>8.3K plays</div>
-              </div>
-              <div className={styles.paragraphbackground5}>
-                <div className={styles.div2}>💬</div>
-                <div className={styles.comments6}>260 comments</div>
-              </div>
-              <div className={styles.paragraphbackground6}>
-                <div className={styles.div3}>★★★★★</div>
-                <div className={styles.rating2}>4.9 rating</div>
-              </div>
-              <div className={styles.background2}>
-                <div className={styles.overlay6}>
-                  <div className={styles.background3}>
-                    <div className={styles.div12}>▶</div>
+                  <div className={index === 0 ? styles.background2 : styles.background4}>
+                    <div className={index === 0 ? styles.overlay : index === 1 ? styles.overlay2 : styles.overlay3}>
+                      <div className={styles.background3}>
+                        <div className={styles.div4}>▶</div>
+                      </div>
+                      <div className={index === 0 ? styles.playTrack : index === 1 ? styles.playEpisode : styles.listenNow}>
+                        {index === 0 ? 'Play track' : index === 1 ? 'Play episode' : 'Listen now'}
+                      </div>
+                    </div>
+                    <div className={styles.gradient} />
                   </div>
-                  <div className={styles.storyMode}>Story mode</div>
                 </div>
-                <div className={styles.gradient} />
-              </div>
-            </div>
+              ))
+            )}
           </div>
         </div>
       </div>
