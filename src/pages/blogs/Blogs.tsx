@@ -65,8 +65,8 @@ const Blogs = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const response = await fetch(`${apiUrl}/api/blogs?limit=20&page=1`);
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${apiUrl}/blogs?limit=20&page=1`);
 
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
@@ -96,7 +96,23 @@ const Blogs = () => {
 
   const renderArticleCard = (article: any) => (
     <div key={article._id || article.id} className={styles.articleCard} onClick={() => onArticleClick(article._id || article.id)}>
-      <div className={styles.articleImage} style={{ backgroundColor: '#e5edf8' }} />
+      <div className={styles.articleImage}>
+        {article.coverImageUrl ? (
+          <img src={article.coverImageUrl} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ 
+            width: '100%', 
+            height: '100%', 
+            backgroundColor: '#e5edf8',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '48px'
+          }}>
+            📝
+          </div>
+        )}
+      </div>
       <div className={styles.articleContent}>
         <h3 className={styles.articleTitle}>{article.title}</h3>
         <p className={styles.articleDescription}>{truncateContent(article.content || article.description || '')}</p>
