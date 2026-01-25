@@ -236,7 +236,7 @@ const AudioPlayer = () => {
       <div className={styles.aPlayer}>
         <Navbar />
         <TabNavigation />
-        <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>Loading audio...</div>
+        <div className={styles.loadingState}>Loading audio...</div>
         <Footer />
       </div>
     );
@@ -247,7 +247,7 @@ const AudioPlayer = () => {
       <div className={styles.aPlayer}>
         <Navbar />
         <TabNavigation />
-        <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>Audio not found</div>
+        <div className={styles.errorState}>Audio not found</div>
         <Footer />
       </div>
     );
@@ -259,89 +259,39 @@ const AudioPlayer = () => {
       <TabNavigation />
       <div className={styles.main}>
         {/* Header Section */}
-        <div style={{ marginBottom: '30px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-            <span style={{
-              backgroundColor: '#3b82f6',
-              color: 'white',
-              padding: '4px 12px',
-              borderRadius: '4px',
-              fontSize: '12px',
-              fontWeight: '600'
-            }}>
+        <div style={{ marginBottom: '30px', animation: 'fadeInUp 0.6s ease-out' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <span className={styles.modernBadge}>
               {audioData.category || 'Music'}
             </span>
           </div>
           <h1 className={styles.heading1}>{audioData.title}</h1>
-          <p style={{ color: '#6b7280', fontSize: '14px' }}>
-            By <strong>{audioData.user?.fullName || audioData.user?.username}</strong> •
+          <p className={styles.headerText}>
+            By <strong style={{ color: '#1e293b' }}>{audioData.user?.fullName || audioData.user?.username}</strong> •
             Published on {formatDate(audioData.createdAt)} •
-            {audioData.plays || 0} plays
+            <strong style={{ color: '#667eea' }}>{audioData.plays || 0}</strong> plays
           </p>
         </div>
 
-        {/* Cover Image & Audio Player Section */}
-        <div style={{
-          backgroundColor: '#f9fafb',
-          padding: '30px',
-          borderRadius: '12px',
-          marginBottom: '30px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          {audioData.thumbnailUrl && (
-            <div style={{
-              marginBottom: '20px',
-              display: 'flex',
-              justifyContent: 'center'
-            }}>
-              <img
-                src={audioData.thumbnailUrl}
-                alt={audioData.title}
-                style={{
-                  maxWidth: '300px',
-                  width: '100%',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                }}
-              />
-            </div>
-          )}
+        {/* Audio Player Section */}
+        <div className={styles.modernPlayerCard}>
           <audio
             ref={audioRef}
             src={audioData.audioUrl}
             controls
-            style={{
-              width: '100%',
-              outline: 'none'
-            }}
           />
         </div>
 
         {/* Upvote/Downvote Section */}
-        <div style={{
-          backgroundColor: 'white',
-          padding: '24px',
-          borderRadius: '12px',
-          marginBottom: '30px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ marginBottom: '16px', fontSize: '18px', fontWeight: '600' }}>Your Feedback</h3>
-          <div style={{ display: 'flex', gap: '12px' }}>
+        <div className={styles.glassmorphicCard}>
+          <h3 className={styles.sectionTitle}>Your Feedback</h3>
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <button
               onClick={handleUpvote}
+              className={userVote === 'upvote' ? styles.gradientButton : styles.gradientButton}
               style={{
-                padding: '12px 24px',
-                backgroundColor: userVote === 'upvote' ? '#3b82f6' : '#f3f4f6',
-                color: userVote === 'upvote' ? 'white' : '#4b5563',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.2s'
+                opacity: userVote === 'upvote' ? 1 : 0.7,
+                background: userVote === 'upvote' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(255, 255, 255, 0.08)'
               }}
             >
               <span style={{ fontSize: '1.3em' }}>👍</span>
@@ -350,19 +300,10 @@ const AudioPlayer = () => {
             </button>
             <button
               onClick={handleDownvote}
+              className={userVote === 'downvote' ? styles.gradientButtonDanger : styles.gradientButtonDanger}
               style={{
-                padding: '12px 24px',
-                backgroundColor: userVote === 'downvote' ? '#ef4444' : '#f3f4f6',
-                color: userVote === 'downvote' ? 'white' : '#4b5563',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.2s'
+                opacity: userVote === 'downvote' ? 1 : 0.7,
+                background: userVote === 'downvote' ? 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' : 'rgba(255, 255, 255, 0.08)'
               }}
             >
               <span style={{ fontSize: '1.3em' }}>👎</span>
@@ -374,34 +315,18 @@ const AudioPlayer = () => {
 
         {/* Description Section */}
         {audioData.description && (
-          <div style={{
-            backgroundColor: 'white',
-            padding: '24px',
-            borderRadius: '12px',
-            marginBottom: '30px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ marginBottom: '12px', fontSize: '18px', fontWeight: '600' }}>Description</h3>
-            <p style={{ color: '#4b5563', lineHeight: '1.6' }}>{audioData.description}</p>
+          <div className={styles.glassmorphicCard}>
+            <h3 className={styles.sectionTitle}>Description</h3>
+            <p className={styles.descriptionText}>{audioData.description}</p>
           </div>
         )}
 
         {/* Tags */}
         {audioData.tags && audioData.tags.length > 0 && (
           <div style={{ marginBottom: '30px' }}>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               {audioData.tags.map((tag: string, idx: number) => (
-                <span
-                  key={idx}
-                  style={{
-                    backgroundColor: '#e0e7ff',
-                    color: '#4f46e5',
-                    padding: '6px 12px',
-                    borderRadius: '16px',
-                    fontSize: '13px',
-                    fontWeight: '500'
-                  }}
-                >
+                <span key={idx} className={styles.modernTag}>
                   #{tag}
                 </span>
               ))}
@@ -410,85 +335,47 @@ const AudioPlayer = () => {
         )}
 
         {/* Author Box */}
-        <div style={{
-          backgroundColor: 'white',
-          padding: '24px',
-          borderRadius: '12px',
-          marginBottom: '30px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          display: 'flex',
-          gap: '16px',
-          alignItems: 'center'
-        }}>
+        <div className={styles.authorCard}>
           <img
-            src={audioData.user.avatar || 'https://via.placeholder.com/64x64'}
+            src={audioData.user.avatar || 'https://via.placeholder.com/80x80'}
             alt={audioData.user.fullName}
-            style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              objectFit: 'cover'
-            }}
+            className={styles.authorAvatar}
           />
           <div>
-            <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>CREATED BY</p>
-            <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>{audioData.user.fullName}</h3>
-            <p style={{ fontSize: '14px', color: '#6b7280' }}>{audioData.user.bio || 'UIU Talent Hunt contributor'}</p>
+            <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '6px', letterSpacing: '1px', fontWeight: '600' }}>CREATED BY</p>
+            <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '6px', color: '#f1f5f9' }}>{audioData.user.fullName}</h3>
+            <p style={{ fontSize: '14px', color: '#cbd5e1' }}>{audioData.user.bio || 'UIU Talent Hunt contributor'}</p>
           </div>
         </div>
 
         {/* Comments Section */}
-        <div style={{
-          backgroundColor: 'white',
-          padding: '24px',
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px' }}>
+        <div className={styles.glassmorphicCard}>
+          <h2 className={styles.sectionTitle}>
             Comments ({audioData.comments?.length || 0})
           </h2>
 
           {/* Comment Form */}
-          <div style={{ marginBottom: '30px', display: 'flex', gap: '12px' }}>
+          <div style={{ marginBottom: '30px', display: 'flex', gap: '16px' }}>
             <img
-              src="https://via.placeholder.com/40x40"
+              src="https://via.placeholder.com/48x48"
               alt="Your avatar"
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                flexShrink: 0
-              }}
+              className={styles.commentAvatar}
             />
             <div style={{ flex: 1 }}>
               <textarea
                 placeholder="Add a comment..."
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                style={{
-                  width: '100%',
-                  minHeight: '80px',
-                  padding: '12px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  resize: 'vertical',
-                  fontFamily: 'inherit'
-                }}
+                className={styles.modernTextarea}
               />
               <button
                 onClick={handlePostComment}
                 disabled={!newComment.trim()}
+                className={styles.gradientButton}
                 style={{
-                  marginTop: '8px',
-                  padding: '8px 16px',
-                  backgroundColor: newComment.trim() ? '#3b82f6' : '#d1d5db',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: newComment.trim() ? 'pointer' : 'not-allowed',
-                  fontSize: '14px',
-                  fontWeight: '500'
+                  marginTop: '12px',
+                  opacity: newComment.trim() ? 1 : 0.5,
+                  cursor: newComment.trim() ? 'pointer' : 'not-allowed'
                 }}
               >
                 Post Comment
@@ -498,33 +385,28 @@ const AudioPlayer = () => {
 
           {/* Comments List */}
           {audioData.comments && audioData.comments.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {audioData.comments.map((comment) => (
-                <div key={comment._id} style={{ display: 'flex', gap: '12px' }}>
+                <div key={comment._id} className={styles.modernCommentCard} style={{ display: 'flex', gap: '16px' }}>
                   <img
-                    src={comment.user?.avatar || 'https://via.placeholder.com/40x40'}
+                    src={comment.user?.avatar || 'https://via.placeholder.com/48x48'}
                     alt={comment.user?.fullName || 'User'}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      flexShrink: 0
-                    }}
+                    className={styles.commentAvatar}
                   />
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <strong style={{ fontSize: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                      <strong className={styles.commentAuthor}>
                         {comment.user?.fullName || comment.user?.username || 'Anonymous'}
                       </strong>
-                      <span style={{ fontSize: '12px', color: '#9ca3af' }}>{timeAgo(comment.createdAt)}</span>
+                      <span className={styles.commentTime}>{timeAgo(comment.createdAt)}</span>
                     </div>
-                    <p style={{ fontSize: '14px', color: '#4b5563', margin: 0 }}>{comment.text}</p>
+                    <p className={styles.commentText}>{comment.text}</p>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p style={{ textAlign: 'center', color: '#6b7280', padding: '20px' }}>
+            <p style={{ textAlign: 'center', color: '#94a3b8', padding: '30px', fontSize: '15px' }}>
               No comments yet. Be the first to comment!
             </p>
           )}
@@ -532,19 +414,9 @@ const AudioPlayer = () => {
 
         <button
           onClick={() => navigate(-1)}
-          style={{
-            padding: '12px 24px',
-            backgroundColor: '#ff8a3c',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            marginTop: '30px',
-            fontSize: '14px',
-            fontWeight: '600'
-          }}
+          className={styles.backButton}
         >
-          Go Back
+          ← Go Back
         </button>
       </div>
 
