@@ -66,6 +66,17 @@ export default function VideosPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleVideoPlay = async (videoId: string) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      await fetch(`${apiUrl}/api/videos/${videoId}/view`, {
+        method: 'POST',
+      });
+    } catch (err) {
+      console.error('Error incrementing video view:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-slate-50 text-gray-900">
       <Navbar />
@@ -82,6 +93,7 @@ export default function VideosPage() {
               autoPlay
               className="h-full w-full bg-black"
               poster={selectedVideo.thumbnailUrl}
+              onPlay={() => handleVideoPlay(selectedVideo._id)}
             />
 
             {/* Video Title */}

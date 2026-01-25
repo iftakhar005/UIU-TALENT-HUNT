@@ -98,7 +98,7 @@ const VPlayer = () => {
   const { Navbar } = useNavbar();
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
-  
+
   const [videoData, setVideoData] = useState<typeof defaultVideoData | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -111,6 +111,7 @@ const VPlayer = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [relatedVideos, setRelatedVideos] = useState(defaultRelatedVideos);
+  const viewCountedRef = useRef(false);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -136,27 +137,27 @@ const VPlayer = () => {
         setLoading(false);
         return;
       }
-      
+
       // Clear previous data
       setVideoData(null);
       setError(null);
-      
+
       try {
         setLoading(true);
         console.log('📹 Fetching video with ID:', id);
         const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
-        
+
         // Try portal route first, fallback to content route
         let response = await fetch(`${apiUrl}/videos/${id}`);
         console.log('📹 Portal route response status:', response.status);
-        
+
         // If portal route fails, try content route
         if (!response.ok) {
           console.log('📹 Trying content route instead...');
           response = await fetch(`${apiUrl}/content/${id}`);
           console.log('📹 Content route response status:', response.status);
         }
-        
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           console.error('❌ Video fetch failed:', errorData);
@@ -164,10 +165,10 @@ const VPlayer = () => {
           setError(errorMessage);
           throw new Error(errorMessage);
         }
-        
+
         const data = await response.json();
         console.log('📹 Video data received:', data);
-        
+
         if (data.success && data.data) {
           const video = data.data;
           console.log('✅ Setting video data:', {
@@ -177,10 +178,10 @@ const VPlayer = () => {
             views: video.views,
             likes: Array.isArray(video.likes) ? video.likes.length : video.likes
           });
-          
+
           const videoDuration = video.duration || 0;
           setDuration(videoDuration);
-          
+
           setVideoData({
             id: video._id,
             title: video.title || 'Untitled Video',
@@ -213,6 +214,64 @@ const VPlayer = () => {
 
     fetchVideo();
   }, [id]);
+
+  // Reset view counted flag when video ID changes
+  useEffect(() => {
+    viewCountedRef.current = false;
+    console.log('🔄 Reset view counter for new video:', id);
+  }, [id]);
+
+  // Increment view count once when video data loads
+  useEffect(() => {
+    if (!id || !videoData) return;
+
+    // Use AbortController to cancel request if component unmounts or id changes
+    const abortController = new AbortController();
+
+    const incrementView = async () => {
+      // Only increment if we haven't already for this video (using ref to persist across StrictMode)
+      if (viewCountedRef.current) {
+        console.log('⚠️ View already counted for this video, skipping');
+        return;
+      }
+
+      try {
+        viewCountedRef.current = true; // Set BEFORE making request
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
+
+        console.log('🎬 Incrementing view for video:', id);
+
+        const response = await fetch(`${apiUrl}/videos/${id}/view`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: abortController.signal
+        });
+
+        if (response.ok) {
+          console.log('✅ View counted successfully for video:', id);
+        } else {
+          console.error('❌ Failed to increment view, status:', response.status);
+          viewCountedRef.current = false; // Reset on failure
+        }
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          console.log('⚠️ View increment aborted (component unmounted)');
+        } else {
+          console.error('❌ Error incrementing view:', error);
+          viewCountedRef.current = false; // Reset on error
+        }
+      }
+    };
+
+    // Increment view after a small delay to ensure video is loaded
+    const timeoutId = setTimeout(incrementView, 500);
+
+    // Cleanup function
+    return () => {
+      clearTimeout(timeoutId);
+      abortController.abort();
+    };
+  }, [id, videoData]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -262,7 +321,7 @@ const VPlayer = () => {
               <p>Loading video...</p>
             </div>
           )}
-          
+
           {/* Error State */}
           {error && !loading && (
             <div style={{ padding: '2rem', textAlign: 'center', color: 'red' }}>
@@ -270,190 +329,190 @@ const VPlayer = () => {
               <button onClick={() => window.location.reload()}>Retry</button>
             </div>
           )}
-          
+
           {/* Video Content - Only show when data is loaded */}
           {!loading && !error && videoData && (
             <>
               {/* Video Player */}
               <div className={styles.videoContainer} ref={videoContainerRef}>
-            <div className={styles.videoBackground}>
-              {/* Video Player */}
-              {videoData && videoData.videoUrl ? (
-                <video
-                  ref={videoRef}
-                  src={videoData.videoUrl}
-                  poster={videoData.thumbnailUrl}
-                  controls
-                  className={styles.videoElement}
-                  style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000' }}
-                  onLoadedMetadata={(e) => {
-                    const video = e.currentTarget;
-                    setDuration(video.duration);
-                  }}
-                  onTimeUpdate={(e) => {
-                    const video = e.currentTarget;
-                    setCurrentTime(video.currentTime);
-                  }}
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                />
-              ) : (
-                <div className={styles.videoOverlay} />
-              )}
-              
-              {/* Play/Pause Button */}
-              {(!videoData || !videoData.videoUrl) && (
-                <button className={styles.playButton} onClick={handlePlayPause}>
-                  <span className="material-icons">
-                    {isPlaying ? 'pause' : 'play_arrow'}
-                  </span>
-                </button>
-              )}
-
-              {/* Cast Button */}
-              <button className={styles.castButton}>
-                <span className="material-icons">cast</span>
-                <span>Cast</span>
-              </button>
-
-              {/* Video Controls */}
-              <div className={styles.videoControls}>
-                <span className={styles.timeDisplay}>{formatTime(currentTime)}</span>
-                
-                <div className={styles.progressBar} onClick={handleProgressClick}>
-                  <div 
-                    className={styles.progressFill} 
-                    style={{ width: `${(currentTime / duration) * 100}%` }}
-                  />
-                  <div 
-                    className={styles.progressHandle}
-                    style={{ left: `${(currentTime / duration) * 100}%` }}
-                  />
-                </div>
-                
-                <span className={styles.timeDisplay}>{formatTime(duration)}</span>
-
-                {/* Volume Control */}
-                <div 
-                  className={styles.volumeControl}
-                  onMouseEnter={() => setShowVolumeSlider(true)}
-                  onMouseLeave={() => setShowVolumeSlider(false)}
-                >
-                  <button className={styles.controlButton}>
-                    <span className="material-icons">
-                      {volume === 0 ? 'volume_off' : volume < 50 ? 'volume_down' : 'volume_up'}
-                    </span>
-                  </button>
-                  {showVolumeSlider && (
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={volume}
-                      onChange={(e) => setVolume(Number(e.target.value))}
-                      className={styles.volumeSlider}
+                <div className={styles.videoBackground}>
+                  {/* Video Player */}
+                  {videoData && videoData.videoUrl ? (
+                    <video
+                      ref={videoRef}
+                      src={videoData.videoUrl}
+                      poster={videoData.thumbnailUrl}
+                      controls
+                      className={styles.videoElement}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000' }}
+                      onLoadedMetadata={(e) => {
+                        const video = e.currentTarget;
+                        setDuration(video.duration);
+                      }}
+                      onTimeUpdate={(e) => {
+                        const video = e.currentTarget;
+                        setCurrentTime(video.currentTime);
+                      }}
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
                     />
+                  ) : (
+                    <div className={styles.videoOverlay} />
                   )}
-                </div>
 
-                {/* Fullscreen */}
-                <button className={styles.controlButton} onClick={handleFullscreen}>
-                  <span className="material-icons">
-                    {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
+                  {/* Play/Pause Button */}
+                  {(!videoData || !videoData.videoUrl) && (
+                    <button className={styles.playButton} onClick={handlePlayPause}>
+                      <span className="material-icons">
+                        {isPlaying ? 'pause' : 'play_arrow'}
+                      </span>
+                    </button>
+                  )}
 
-          {/* Video Info */}
-          {videoData && (
-            <div className={styles.videoInfo}>
-              <h1 className={styles.videoTitle}>{videoData.title}</h1>
-              
-              <div className={styles.videoMeta}>
-                <span className={styles.authorInfo}>
-                  <div className={styles.authorAvatar} />
-                  <span>{videoData.author}</span>
-                </span>
-                <span className={styles.separator}>•</span>
-                <span>{videoData.views} views</span>
-                <span className={styles.separator}>•</span>
-                <span>{videoData.uploadedAt}</span>
-              </div>
+                  {/* Cast Button */}
+                  <button className={styles.castButton}>
+                    <span className="material-icons">cast</span>
+                    <span>Cast</span>
+                  </button>
 
-              {/* Action Buttons */}
-              <div className={styles.actionButtons}>
-                <button className={styles.actionBtn}>
-                  <span>👍</span>
-                  <span>{videoData.likes}</span>
-                </button>
-                <button className={styles.actionBtn}>
-                  <span>👎</span>
-                  <span>Dislike</span>
-                </button>
-                <button className={styles.actionBtn}>
-                  <span>💬</span>
-                  <span>Comments</span>
-                </button>
-                <button className={styles.actionBtn}>
-                  <span>🔗</span>
-                  <span>Share</span>
-                </button>
-                <button className={styles.actionBtn}>
-                  <span className={styles.ratingStars}>{renderStars(videoData.rating)}</span>
-                  <span>{videoData.rating}</span>
-                </button>
-              </div>
+                  {/* Video Controls */}
+                  <div className={styles.videoControls}>
+                    <span className={styles.timeDisplay}>{formatTime(currentTime)}</span>
 
-              {/* Description */}
-              <div className={styles.descriptionSection}>
-                <button 
-                  className={styles.descriptionToggle}
-                  onClick={() => setShowDescription(!showDescription)}
-                >
-                  {showDescription ? 'Hide description' : 'Show description'}
-                  <span className="material-icons">
-                    {showDescription ? 'expand_less' : 'expand_more'}
-                  </span>
-                </button>
-                
-                {showDescription && (
-                  <div className={styles.description}>
-                    <p>{videoData.description}</p>
-                    <div className={styles.tags}>
-                      {videoData.tags.map((tag, i) => (
-                        <span key={i} className={styles.tag}>{tag}</span>
-                      ))}
+                    <div className={styles.progressBar} onClick={handleProgressClick}>
+                      <div
+                        className={styles.progressFill}
+                        style={{ width: `${(currentTime / duration) * 100}%` }}
+                      />
+                      <div
+                        className={styles.progressHandle}
+                        style={{ left: `${(currentTime / duration) * 100}%` }}
+                      />
                     </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
-          {/* Related Videos - Mobile */}
-          <div className={styles.relatedVideosMobile}>
-            <h3 className={styles.sectionTitle}>Related Videos</h3>
-            <div className={styles.relatedGrid}>
-              {defaultRelatedVideos.map((video) => (
-                <div 
-                  key={video.id} 
-                  className={styles.relatedCard}
-                  onClick={() => handleVideoClick(video.id)}
-                >
-                  <div className={styles.relatedThumbnail}>
-                    <span className={styles.videoDuration}>{video.duration}</span>
-                  </div>
-                  <div className={styles.relatedInfo}>
-                    <h4>{video.title}</h4>
-                    <span>{video.author}</span>
-                    <span>{video.views} views • {renderStars(video.rating)} {video.rating}</span>
+                    <span className={styles.timeDisplay}>{formatTime(duration)}</span>
+
+                    {/* Volume Control */}
+                    <div
+                      className={styles.volumeControl}
+                      onMouseEnter={() => setShowVolumeSlider(true)}
+                      onMouseLeave={() => setShowVolumeSlider(false)}
+                    >
+                      <button className={styles.controlButton}>
+                        <span className="material-icons">
+                          {volume === 0 ? 'volume_off' : volume < 50 ? 'volume_down' : 'volume_up'}
+                        </span>
+                      </button>
+                      {showVolumeSlider && (
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={volume}
+                          onChange={(e) => setVolume(Number(e.target.value))}
+                          className={styles.volumeSlider}
+                        />
+                      )}
+                    </div>
+
+                    {/* Fullscreen */}
+                    <button className={styles.controlButton} onClick={handleFullscreen}>
+                      <span className="material-icons">
+                        {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
+                      </span>
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+
+              {/* Video Info */}
+              {videoData && (
+                <div className={styles.videoInfo}>
+                  <h1 className={styles.videoTitle}>{videoData.title}</h1>
+
+                  <div className={styles.videoMeta}>
+                    <span className={styles.authorInfo}>
+                      <div className={styles.authorAvatar} />
+                      <span>{videoData.author}</span>
+                    </span>
+                    <span className={styles.separator}>•</span>
+                    <span>{videoData.views} views</span>
+                    <span className={styles.separator}>•</span>
+                    <span>{videoData.uploadedAt}</span>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className={styles.actionButtons}>
+                    <button className={styles.actionBtn}>
+                      <span>👍</span>
+                      <span>{videoData.likes}</span>
+                    </button>
+                    <button className={styles.actionBtn}>
+                      <span>👎</span>
+                      <span>Dislike</span>
+                    </button>
+                    <button className={styles.actionBtn}>
+                      <span>💬</span>
+                      <span>Comments</span>
+                    </button>
+                    <button className={styles.actionBtn}>
+                      <span>🔗</span>
+                      <span>Share</span>
+                    </button>
+                    <button className={styles.actionBtn}>
+                      <span className={styles.ratingStars}>{renderStars(videoData.rating)}</span>
+                      <span>{videoData.rating}</span>
+                    </button>
+                  </div>
+
+                  {/* Description */}
+                  <div className={styles.descriptionSection}>
+                    <button
+                      className={styles.descriptionToggle}
+                      onClick={() => setShowDescription(!showDescription)}
+                    >
+                      {showDescription ? 'Hide description' : 'Show description'}
+                      <span className="material-icons">
+                        {showDescription ? 'expand_less' : 'expand_more'}
+                      </span>
+                    </button>
+
+                    {showDescription && (
+                      <div className={styles.description}>
+                        <p>{videoData.description}</p>
+                        <div className={styles.tags}>
+                          {videoData.tags.map((tag, i) => (
+                            <span key={i} className={styles.tag}>{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Related Videos - Mobile */}
+              <div className={styles.relatedVideosMobile}>
+                <h3 className={styles.sectionTitle}>Related Videos</h3>
+                <div className={styles.relatedGrid}>
+                  {defaultRelatedVideos.map((video) => (
+                    <div
+                      key={video.id}
+                      className={styles.relatedCard}
+                      onClick={() => handleVideoClick(video.id)}
+                    >
+                      <div className={styles.relatedThumbnail}>
+                        <span className={styles.videoDuration}>{video.duration}</span>
+                      </div>
+                      <div className={styles.relatedInfo}>
+                        <h4>{video.title}</h4>
+                        <span>{video.author}</span>
+                        <span>{video.views} views • {renderStars(video.rating)} {video.rating}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </>
           )}
         </div>
@@ -471,7 +530,7 @@ const VPlayer = () => {
           <div className={styles.commentsList}>
             {defaultComments.map((comment) => (
               <div key={comment.id} className={styles.comment}>
-                <div 
+                <div
                   className={styles.commentAvatar}
                   style={{ background: comment.avatar }}
                 />
@@ -492,7 +551,7 @@ const VPlayer = () => {
 
           {/* Comment Input */}
           <div className={styles.commentInput}>
-            <div 
+            <div
               className={styles.commentAvatar}
               style={{ background: 'linear-gradient(135deg, #ff8a3c, #ffd56a)' }}
             />
@@ -504,7 +563,7 @@ const VPlayer = () => {
                 onChange={(e) => setCommentText(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleCommentSubmit()}
               />
-              <button 
+              <button
                 className={styles.sendButton}
                 onClick={handleCommentSubmit}
               >
@@ -517,8 +576,8 @@ const VPlayer = () => {
           <div className={styles.relatedVideosDesktop}>
             <h3 className={styles.sectionTitle}>Up Next</h3>
             {relatedVideos && relatedVideos.length > 0 && relatedVideos.slice(0, 3).map((video) => (
-              <div 
-                key={video.id} 
+              <div
+                key={video.id}
                 className={styles.relatedCardSmall}
                 onClick={() => handleVideoClick(video.id)}
               >

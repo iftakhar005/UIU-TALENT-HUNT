@@ -292,6 +292,7 @@ export const authAPI = {
   saveAuth: (token: string, user: User) => {
     localStorage.setItem('token', token);
     localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userId', user.id);
     localStorage.setItem('user', JSON.stringify(user));
   },
 };

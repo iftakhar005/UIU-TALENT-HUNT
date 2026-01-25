@@ -65,8 +65,8 @@ const Blogs = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const response = await fetch(`${apiUrl}/api/blogs?limit=20&page=1`);
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${apiUrl}/blogs?limit=20&page=1`);
 
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
@@ -96,13 +96,43 @@ const Blogs = () => {
 
   const renderArticleCard = (article: any) => (
     <div key={article._id || article.id} className={styles.articleCard} onClick={() => onArticleClick(article._id || article.id)}>
-      <div className={styles.articleImage} style={{ backgroundColor: '#e5edf8' }} />
+      <div className={styles.articleImage}>
+        {article.coverImageUrl ? (
+          <img src={article.coverImageUrl} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ 
+            width: '100%', 
+            height: '100%', 
+            backgroundColor: '#e5edf8',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '48px'
+          }}>
+            📝
+          </div>
+        )}
+      </div>
       <div className={styles.articleContent}>
         <h3 className={styles.articleTitle}>{article.title}</h3>
         <p className={styles.articleDescription}>{truncateContent(article.content || article.description || '')}</p>
         <div className={styles.articleMeta}>
           <span>by <b>{article.user?.fullName || article.author}</b> • {article.readTime || formatDate(article.createdAt)}</span>
         </div>
+        {article.averageRating > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+            <div style={{ color: '#fbbf24', fontSize: '16px' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span key={star}>
+                  {star <= Math.round(article.averageRating) ? '★' : '☆'}
+                </span>
+              ))}
+            </div>
+            <span style={{ fontSize: '13px', color: '#6b7280' }}>
+              {article.averageRating.toFixed(1)} ({article.totalRatings})
+            </span>
+          </div>
+        )}
         <div className={styles.articleStats}>
           {article.views && <div className={styles.stat}><span className={styles.statIcon}>👁</span><span className={styles.statText}>{article.views} views</span></div>}
           {article.comments && <div className={styles.stat}><span className={styles.statIcon}>💬</span><span className={styles.statText}>{article.comments} comments</span></div>}

@@ -35,8 +35,8 @@ export default function AudiosPage() {
   useEffect(() => {
     const fetchAudios = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const response = await fetch(`${apiUrl}/api/audios?limit=20&page=1`);
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${apiUrl}/audios?limit=20&page=1`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch audios');

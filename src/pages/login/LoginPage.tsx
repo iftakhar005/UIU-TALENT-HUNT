@@ -163,6 +163,11 @@ export default function LoginPage() {
                   className={styles.inputField}
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value.slice(0, 6))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !loading && verificationCode) {
+                      onVerifyCodeClick();
+                    }
+                  }}
                   maxLength={6}
                 />
               </div>
@@ -238,6 +243,11 @@ export default function LoginPage() {
                 className={styles.inputField}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !loading) {
+                    onLoginClick();
+                  }
+                }}
               />
             </div>
           </div>
@@ -252,6 +262,11 @@ export default function LoginPage() {
                 className={styles.inputField2}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !loading) {
+                    onLoginClick();
+                  }
+                }}
               />
               <button
                 className={styles.eyeButton}
