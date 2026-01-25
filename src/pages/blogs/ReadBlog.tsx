@@ -53,8 +53,9 @@ const ReadBlog = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [newComment, setNewComment] = useState('');
-  const [userRating, setUserRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
+  const [userVote, setUserVote] = useState<'upvote' | 'downvote' | null>(null);
+  const [upvoteCount, setUpvoteCount] = useState(0);
+  const [downvoteCount, setDownvoteCount] = useState(0);
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -64,19 +65,19 @@ const ReadBlog = () => {
         const response = await fetch(`${apiUrl}/blogs/${id}`);
 
         if (!response.ok) throw new Error('Failed to fetch blog');
-        
+
         const data = await response.json();
         setBlog(data.data);
-        
-        // Check if user has already rated this blog
-        const token = localStorage.getItem('token');
-        const userId = localStorage.getItem('userId');
-        if (token && userId && data.data.ratings) {
-          const userRatingObj = data.data.ratings.find(
-            (r: any) => r.user === userId || r.user._id === userId
-          );
-          if (userRatingObj) {
-            setUserRating(userRatingObj.rating);
+        setUpvoteCount(data.data.upvotes || 0);
+        setDownvoteCount(data.data.downvotes || 0);
+
+        // Check if user has already voted
+        const sessionUserId = localStorage.getItem('sessionUserId');
+        if (sessionUserId && data.data.upvotedBy) {
+          if (data.data.upvotedBy.includes(sessionUserId)) {
+            setUserVote('upvote');
+          } else if (data.data.downvotedBy && data.data.downvotedBy.includes(sessionUserId)) {
+            setUserVote('downvote');
           }
         }
       } catch (err) {
@@ -133,7 +134,7 @@ const ReadBlog = () => {
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (seconds < 60) return 'just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
@@ -148,37 +149,53 @@ const ReadBlog = () => {
     }
   };
 
-  const handleRating = async (rating: number) => {
+  const handleUpvote = async () => {
+    if (!id) return;
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please login to rate this blog');
-        return;
-      }
-
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/blogs/${id}/rate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ rating })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUserRating(rating);
-        setBlog(data.data);
-        console.log('Rating submitted successfully');
-      } else {
-        alert(data.error || 'Failed to submit rating');
-        console.error('Rating error:', data);
+      let voteType = userVote === 'upvote' ? 'remove' : 'upvote';
+      let sessionUserId = localStorage.getItem('sessionUserId');
+      if (!sessionUserId) {
+        sessionUserId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('sessionUserId', sessionUserId);
       }
-    } catch (err) {
-      console.error('Error rating blog:', err);
-      alert('Failed to submit rating. Please try again.');
+      const response = await fetch(`${apiUrl}/blogs/${id}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': sessionUserId },
+        body: JSON.stringify({ voteType })
+      });
+      if (!response.ok) throw new Error('Failed to vote');
+      const data = await response.json();
+      setUserVote(data.userVote);
+      setUpvoteCount(data.upvotes || 0);
+      setDownvoteCount(data.downvotes || 0);
+    } catch (error) {
+      console.error('Error voting:', error);
+    }
+  };
+
+  const handleDownvote = async () => {
+    if (!id) return;
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      let voteType = userVote === 'downvote' ? 'remove' : 'downvote';
+      let sessionUserId = localStorage.getItem('sessionUserId');
+      if (!sessionUserId) {
+        sessionUserId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('sessionUserId', sessionUserId);
+      }
+      const response = await fetch(`${apiUrl}/blogs/${id}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': sessionUserId },
+        body: JSON.stringify({ voteType })
+      });
+      if (!response.ok) throw new Error('Failed to vote');
+      const data = await response.json();
+      setUserVote(data.userVote);
+      setUpvoteCount(data.upvotes || 0);
+      setDownvoteCount(data.downvotes || 0);
+    } catch (error) {
+      console.error('Error voting:', error);
     }
   };
 
@@ -196,38 +213,49 @@ const ReadBlog = () => {
             <p className={styles.meta}>
               By {blog.user.fullName} • Published on {formatDate(blog.createdAt)} • {blog.readingTime || 5} min read
             </p>
-            
-            {/* Rating Display and Input */}
-            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ fontSize: '24px', display: 'flex', gap: '4px' }}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <span
-                      key={star}
-                      onClick={() => handleRating(star)}
-                      onMouseEnter={() => setHoverRating(star)}
-                      onMouseLeave={() => setHoverRating(0)}
-                      style={{
-                        cursor: 'pointer',
-                        color: star <= (hoverRating || userRating) ? '#fbbf24' : '#d1d5db',
-                        transition: 'color 0.2s'
-                      }}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
-                <div style={{ fontSize: '14px', color: '#6b7280' }}>
-                  {blog.averageRating ? (
-                    <span><b>{blog.averageRating.toFixed(1)}</b> ({blog.totalRatings} {blog.totalRatings === 1 ? 'rating' : 'ratings'})</span>
-                  ) : (
-                    <span>No ratings yet</span>
-                  )}
-                </div>
-              </div>
-              {userRating > 0 && (
-                <p style={{ fontSize: '12px', color: '#10b981', margin: 0 }}>✓ You rated this {userRating} star{userRating > 1 ? 's' : ''}</p>
-              )}
+
+            {/* Upvote/Downvote */}
+            <div style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
+              <button
+                onClick={handleUpvote}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: userVote === 'upvote' ? '#3b82f6' : '#f3f4f6',
+                  color: userVote === 'upvote' ? 'white' : '#4b5563',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span style={{ fontSize: '1.2em' }}>👍</span>
+                <span>Upvote</span>
+                {upvoteCount > 0 && <span>({upvoteCount})</span>}
+              </button>
+              <button
+                onClick={handleDownvote}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: userVote === 'downvote' ? '#ef4444' : '#f3f4f6',
+                  color: userVote === 'downvote' ? 'white' : '#4b5563',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span style={{ fontSize: '1.2em' }}>👎</span>
+                <span>Downvote</span>
+                {downvoteCount > 0 && <span>({downvoteCount})</span>}
+              </button>
             </div>
           </div>
 
@@ -293,10 +321,10 @@ const ReadBlog = () => {
             {blog.comments && blog.comments.length > 0 ? (
               blog.comments.map((comment, idx) => (
                 <div key={comment._id || idx} className={styles.comment}>
-                  <img 
-                    src={comment.user?.avatar || 'https://via.placeholder.com/40x40'} 
-                    alt={comment.user?.fullName || 'User'} 
-                    className={styles.commentAvatar} 
+                  <img
+                    src={comment.user?.avatar || 'https://via.placeholder.com/40x40'}
+                    alt={comment.user?.fullName || 'User'}
+                    className={styles.commentAvatar}
                   />
                   <div className={styles.commentContent}>
                     <div className={styles.commentHeader}>
