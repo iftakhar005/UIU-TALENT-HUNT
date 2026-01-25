@@ -112,6 +112,8 @@ const VPlayer = () => {
   const [error, setError] = useState<string | null>(null);
   const [relatedVideos, setRelatedVideos] = useState(defaultRelatedVideos);
   const viewCountedRef = useRef(false);
+  const userInteractedRef = useRef(false);
+  const userClickTimeRef = useRef<number>(-1); // Track video time when user clicked
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -218,60 +220,9 @@ const VPlayer = () => {
   // Reset view counted flag when video ID changes
   useEffect(() => {
     viewCountedRef.current = false;
-    console.log('🔄 Reset view counter for new video:', id);
+    userInteractedRef.current = false;
+    userClickTimeRef.current = -1;
   }, [id]);
-
-  // Increment view count once when video data loads
-  useEffect(() => {
-    if (!id || !videoData) return;
-
-    // Use AbortController to cancel request if component unmounts or id changes
-    const abortController = new AbortController();
-
-    const incrementView = async () => {
-      // Only increment if we haven't already for this video (using ref to persist across StrictMode)
-      if (viewCountedRef.current) {
-        console.log('⚠️ View already counted for this video, skipping');
-        return;
-      }
-
-      try {
-        viewCountedRef.current = true; // Set BEFORE making request
-        const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
-
-        console.log('🎬 Incrementing view for video:', id);
-
-        const response = await fetch(`${apiUrl}/videos/${id}/view`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: abortController.signal
-        });
-
-        if (response.ok) {
-          console.log('✅ View counted successfully for video:', id);
-        } else {
-          console.error('❌ Failed to increment view, status:', response.status);
-          viewCountedRef.current = false; // Reset on failure
-        }
-      } catch (error: any) {
-        if (error.name === 'AbortError') {
-          console.log('⚠️ View increment aborted (component unmounted)');
-        } else {
-          console.error('❌ Error incrementing view:', error);
-          viewCountedRef.current = false; // Reset on error
-        }
-      }
-    };
-
-    // Increment view after a small delay to ensure video is loaded
-    const timeoutId = setTimeout(incrementView, 500);
-
-    // Cleanup function
-    return () => {
-      clearTimeout(timeoutId);
-      abortController.abort();
-    };
-  }, [id, videoData]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -343,18 +294,76 @@ const VPlayer = () => {
                       src={videoData.videoUrl}
                       poster={videoData.thumbnailUrl}
                       controls
+                      autoPlay={false}
+                      preload="metadata"
                       className={styles.videoElement}
                       style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000' }}
                       onLoadedMetadata={(e) => {
                         const video = e.currentTarget;
                         setDuration(video.duration);
+                        // Forcefully pause the video to prevent auto-play
+                        video.pause();
+                        console.log('📹 Video loaded and paused, duration:', video.duration);
                       }}
                       onTimeUpdate={(e) => {
                         const video = e.currentTarget;
                         setCurrentTime(video.currentTime);
+
+                        // Check if view already counted in this session (survives re-renders)
+                        const viewKey = `video_view_counted_${id}`;
+                        const alreadyCounted = sessionStorage.getItem(viewKey) === 'true';
+
+                        // Log every second for debugging
+                        if (Math.floor(video.currentTime) !== Math.floor(currentTime)) {
+                          console.log(`⏱️ Video time: ${Math.floor(video.currentTime)}s, sessionCounted: ${alreadyCounted}, userClickTime: ${userClickTimeRef.current}`);
+                        }
+
+                        // Increment view ONLY if:
+                        // 1. View not already counted in this session
+                        // 2. User clicked BEFORE video reached 3 seconds (userClickTimeRef < 3)
+                        // 3. Video has now played for 3+ seconds
+                        if (!alreadyCounted && id && userClickTimeRef.current >= 0 && userClickTimeRef.current < 3 && video.currentTime >= 3) {
+                          // Mark as counted in sessionStorage IMMEDIATELY
+                          sessionStorage.setItem(viewKey, 'true');
+                          viewCountedRef.current = true;
+
+                          const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
+                          console.log('🎬 User clicked early AND watched 3+ seconds, incrementing view:', id);
+
+                          fetch(`${apiUrl}/videos/${id}/view`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                          })
+                            .then(() => console.log('✅ View counted for video:', id))
+                            .catch(error => {
+                              console.error('❌ Error incrementing view:', error);
+                              // Remove from sessionStorage on error so it can retry
+                              sessionStorage.removeItem(viewKey);
+                              viewCountedRef.current = false;
+                            });
+                        } else if (!alreadyCounted && userClickTimeRef.current >= 3 && video.currentTime >= 3) {
+                          console.log('⚠️ User clicked too late (after 3s), view NOT counted');
+                          // Mark as "attempted" so we don't keep logging this
+                          sessionStorage.setItem(viewKey, 'false');
+                        }
                       }}
-                      onPlay={() => setIsPlaying(true)}
-                      onPause={() => setIsPlaying(false)}
+                      onPlay={() => {
+                        console.log('▶️ Video onPlay event fired');
+                        setIsPlaying(true);
+                      }}
+                      onClick={() => {
+                        // Mark user interaction and record the video time when they clicked
+                        if (!userInteractedRef.current) {
+                          userInteractedRef.current = true;
+                          const currentVideoTime = videoRef.current?.currentTime || 0;
+                          userClickTimeRef.current = currentVideoTime;
+                          console.log(`👆 User clicked on video at ${currentVideoTime.toFixed(1)}s`);
+                        }
+                      }}
+                      onPause={() => {
+                        console.log('⏸️ Video onPause event fired');
+                        setIsPlaying(false);
+                      }}
                     />
                   ) : (
                     <div className={styles.videoOverlay} />

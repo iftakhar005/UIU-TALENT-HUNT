@@ -90,7 +90,6 @@ export default function VideosPage() {
             <video
               src={selectedVideo.videoUrl}
               controls
-              autoPlay
               className="h-full w-full bg-black"
               poster={selectedVideo.thumbnailUrl}
               onPlay={() => handleVideoPlay(selectedVideo._id)}
