@@ -24,10 +24,10 @@ const VPortal: FunctionComponent = () => {
         console.log('📹 Fetching videos from API...');
         const response = await contentAPI.getAll({ type: 'video', limit: 50 });
         console.log('📹 Videos API Response:', response);
-        
+
         // Handle both 'content' and 'data' fields for backward compatibility
         const videosList = response.content || response.data || [];
-        
+
         if (response.success) {
           if (videosList.length > 0) {
             console.log(`✅ Loaded ${videosList.length} videos`);
@@ -107,7 +107,7 @@ const VPortal: FunctionComponent = () => {
     >
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', alignItems: 'center' }}>
         <div>
-          <div style={{ 
+          <div style={{
             display: 'inline-block',
             backgroundColor: '#fbbf24',
             color: '#000',
@@ -121,17 +121,17 @@ const VPortal: FunctionComponent = () => {
           }}>
             🏆 Featured Video
           </div>
-          <h2 style={{ 
-            fontSize: '36px', 
-            fontWeight: '700', 
+          <h2 style={{
+            fontSize: '36px',
+            fontWeight: '700',
             color: '#fff',
             marginBottom: '16px',
             lineHeight: '1.2'
           }}>
             {video.title}
           </h2>
-          <p style={{ 
-            fontSize: '16px', 
+          <p style={{
+            fontSize: '16px',
             color: 'rgba(255,255,255,0.9)',
             marginBottom: '24px',
             lineHeight: '1.6'
@@ -184,15 +184,15 @@ const VPortal: FunctionComponent = () => {
         </div>
         <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
           {video.thumbnailUrl ? (
-            <img 
-              src={video.thumbnailUrl} 
-              alt={video.title} 
+            <img
+              src={video.thumbnailUrl}
+              alt={video.title}
               style={{ width: '100%', height: '350px', objectFit: 'cover' }}
             />
           ) : (
-            <div style={{ 
-              width: '100%', 
-              height: '350px', 
+            <div style={{
+              width: '100%',
+              height: '350px',
               background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
               display: 'flex',
               alignItems: 'center',
@@ -239,9 +239,9 @@ const VPortal: FunctionComponent = () => {
             <span className={styles.playIcon}>▶</span>
           </div>
         )}
-        {video.duration && (
+        {/* {video.duration && (
           <div className={styles.durationBadge}>{video.duration}</div>
-        )}
+        )} */}
       </div>
       <div className={styles.videoInfo}>
         <h3 className={styles.videoTitle}>{video.title}</h3>
@@ -261,7 +261,7 @@ const VPortal: FunctionComponent = () => {
           </div>
           <div className={styles.stat}>
             <span className={styles.statIcon} style={{ color: '#fbbf24', fontSize: '16px' }}>{renderStars(video.averageRating)}</span>
-            <span>{video.averageRating ? `${video.averageRating.toFixed(1)} rating` : 'No ratings'}</span>
+            <span>{renderStars(video.averageRating)}</span>
           </div>
         </div>
         {video.tags && video.tags.length > 0 && (
@@ -278,8 +278,8 @@ const VPortal: FunctionComponent = () => {
   return (
     <>
       <Navbar />
+      <TabNavigation />
       <div className={styles.vPortal}>
-        <TabNavigation />
         <div className={styles.main}>
           <div className={styles.header}>
             <h1 className={styles.pageTitle}>Video Portal</h1>

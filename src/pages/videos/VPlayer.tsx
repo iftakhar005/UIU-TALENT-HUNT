@@ -98,7 +98,7 @@ const VPlayer = () => {
   const { Navbar } = useNavbar();
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
-
+  
   const [videoData, setVideoData] = useState<typeof defaultVideoData | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -111,15 +111,100 @@ const VPlayer = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [relatedVideos, setRelatedVideos] = useState(defaultRelatedVideos);
+  const [userVote, setUserVote] = useState<'upvote' | 'downvote' | null>(null); // Track user's vote
+  const [upvoteCount, setUpvoteCount] = useState(0);
+  const [downvoteCount, setDownvoteCount] = useState(0);
   const viewCountedRef = useRef(false);
-  const userInteractedRef = useRef(false);
-  const userClickTimeRef = useRef<number>(-1); // Track video time when user clicked
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleVideoClick = (videoId: string) => {
     navigate(`/videos/${videoId}`);
   };
+
+  const handleUpvote = useCallback(async () => {
+    if (!id) return;
+    
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
+      let voteType = 'upvote';
+      
+      // If already upvoted, toggle it off
+      if (userVote === 'upvote') {
+        voteType = 'remove';
+      }
+      
+      // Get or create a session user ID
+      let sessionUserId = localStorage.getItem('sessionUserId');
+      if (!sessionUserId) {
+        sessionUserId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('sessionUserId', sessionUserId);
+      }
+      
+      const response = await fetch(`${apiUrl}/videos/${id}/vote`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': sessionUserId
+        },
+        body: JSON.stringify({ voteType })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to vote');
+      }
+      
+      const data = await response.json();
+      setUserVote(data.userVote);
+      setUpvoteCount(data.upvotes || 0);
+      setDownvoteCount(data.downvotes || 0);
+      console.log('✅ Vote updated:', data.userVote);
+    } catch (error) {
+      console.error('❌ Error voting:', error);
+    }
+  }, [id, userVote]);
+
+  const handleDownvote = useCallback(async () => {
+    if (!id) return;
+    
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
+      let voteType = 'downvote';
+      
+      // If already downvoted, toggle it off
+      if (userVote === 'downvote') {
+        voteType = 'remove';
+      }
+      
+      // Get or create a session user ID
+      let sessionUserId = localStorage.getItem('sessionUserId');
+      if (!sessionUserId) {
+        sessionUserId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('sessionUserId', sessionUserId);
+      }
+      
+      const response = await fetch(`${apiUrl}/videos/${id}/vote`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': sessionUserId
+        },
+        body: JSON.stringify({ voteType })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to vote');
+      }
+      
+      const data = await response.json();
+      setUserVote(data.userVote);
+      setUpvoteCount(data.upvotes || 0);
+      setDownvoteCount(data.downvotes || 0);
+      console.log('✅ Vote updated:', data.userVote);
+    } catch (error) {
+      console.error('❌ Error voting:', error);
+    }
+  }, [id, userVote]);
 
   const renderStars = (rating: number) => {
     return '★'.repeat(Math.round(rating));
@@ -139,27 +224,27 @@ const VPlayer = () => {
         setLoading(false);
         return;
       }
-
+      
       // Clear previous data
       setVideoData(null);
       setError(null);
-
+      
       try {
         setLoading(true);
         console.log('📹 Fetching video with ID:', id);
         const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
-
+        
         // Try portal route first, fallback to content route
         let response = await fetch(`${apiUrl}/videos/${id}`);
         console.log('📹 Portal route response status:', response.status);
-
+        
         // If portal route fails, try content route
         if (!response.ok) {
           console.log('📹 Trying content route instead...');
           response = await fetch(`${apiUrl}/content/${id}`);
           console.log('📹 Content route response status:', response.status);
         }
-
+        
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           console.error('❌ Video fetch failed:', errorData);
@@ -167,10 +252,10 @@ const VPlayer = () => {
           setError(errorMessage);
           throw new Error(errorMessage);
         }
-
+        
         const data = await response.json();
         console.log('📹 Video data received:', data);
-
+        
         if (data.success && data.data) {
           const video = data.data;
           console.log('✅ Setting video data:', {
@@ -180,10 +265,14 @@ const VPlayer = () => {
             views: video.views,
             likes: Array.isArray(video.likes) ? video.likes.length : video.likes
           });
-
+          
           const videoDuration = video.duration || 0;
           setDuration(videoDuration);
-
+          
+          // Set vote counts
+          setUpvoteCount(video.upvotes || 0);
+          setDownvoteCount(video.downvotes || 0);
+          
           setVideoData({
             id: video._id,
             title: video.title || 'Untitled Video',
@@ -217,11 +306,9 @@ const VPlayer = () => {
     fetchVideo();
   }, [id]);
 
-  // Reset view counted flag when video ID changes
+  // Reset view counted when video changes
   useEffect(() => {
     viewCountedRef.current = false;
-    userInteractedRef.current = false;
-    userClickTimeRef.current = -1;
   }, [id]);
 
   const formatTime = (seconds: number) => {
@@ -230,9 +317,45 @@ const VPlayer = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handlePlayPause = useCallback(() => {
-    setIsPlaying(!isPlaying);
-  }, [isPlaying]);
+  const handlePlayPause = useCallback(async () => {
+    const newPlayingState = !isPlaying;
+    setIsPlaying(newPlayingState);
+    
+    // Increment view count only once when video starts playing for the first time
+    if (newPlayingState && !viewCountedRef.current && id && videoData) {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
+        const endpoint = `${apiUrl}/videos/${id}/view`;
+        console.log('📤 Incrementing view at endpoint:', endpoint);
+        
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('❌ View increment failed with status', response.status, ':', errorData);
+          throw new Error(`Failed to increment view: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ View counted for video:', id, 'New view count:', data.views);
+        viewCountedRef.current = true;
+        
+        // Update local state to reflect new view count immediately in UI
+        setVideoData(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            views: `${data.views?.toLocaleString() || (parseInt(prev.views.replace(/,/g, '')) + 1).toLocaleString()}`
+          };
+        });
+      } catch (error) {
+        console.error('❌ Error incrementing view:', error);
+      }
+    }
+  }, [isPlaying, id, videoData]);
 
   const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -272,7 +395,7 @@ const VPlayer = () => {
               <p>Loading video...</p>
             </div>
           )}
-
+          
           {/* Error State */}
           {error && !loading && (
             <div style={{ padding: '2rem', textAlign: 'center', color: 'red' }}>
@@ -280,248 +403,190 @@ const VPlayer = () => {
               <button onClick={() => window.location.reload()}>Retry</button>
             </div>
           )}
-
+          
           {/* Video Content - Only show when data is loaded */}
           {!loading && !error && videoData && (
             <>
               {/* Video Player */}
               <div className={styles.videoContainer} ref={videoContainerRef}>
-                <div className={styles.videoBackground}>
-                  {/* Video Player */}
-                  {videoData && videoData.videoUrl ? (
-                    <video
-                      ref={videoRef}
-                      src={videoData.videoUrl}
-                      poster={videoData.thumbnailUrl}
-                      controls
-                      autoPlay={false}
-                      preload="metadata"
-                      className={styles.videoElement}
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000' }}
-                      onLoadedMetadata={(e) => {
-                        const video = e.currentTarget;
-                        setDuration(video.duration);
-                        // Forcefully pause the video to prevent auto-play
-                        video.pause();
-                        console.log('📹 Video loaded and paused, duration:', video.duration);
-                      }}
-                      onTimeUpdate={(e) => {
-                        const video = e.currentTarget;
-                        setCurrentTime(video.currentTime);
-
-                        // Check if view already counted in this session (survives re-renders)
-                        const viewKey = `video_view_counted_${id}`;
-                        const alreadyCounted = sessionStorage.getItem(viewKey) === 'true';
-
-                        // Log every second for debugging
-                        if (Math.floor(video.currentTime) !== Math.floor(currentTime)) {
-                          console.log(`⏱️ Video time: ${Math.floor(video.currentTime)}s, sessionCounted: ${alreadyCounted}, userClickTime: ${userClickTimeRef.current}`);
-                        }
-
-                        // Increment view ONLY if:
-                        // 1. View not already counted in this session
-                        // 2. User clicked BEFORE video reached 3 seconds (userClickTimeRef < 3)
-                        // 3. Video has now played for 3+ seconds
-                        if (!alreadyCounted && id && userClickTimeRef.current >= 0 && userClickTimeRef.current < 3 && video.currentTime >= 3) {
-                          // Mark as counted in sessionStorage IMMEDIATELY
-                          sessionStorage.setItem(viewKey, 'true');
-                          viewCountedRef.current = true;
-
-                          const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
-                          console.log('🎬 User clicked early AND watched 3+ seconds, incrementing view:', id);
-
-                          fetch(`${apiUrl}/videos/${id}/view`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' }
-                          })
-                            .then(() => console.log('✅ View counted for video:', id))
-                            .catch(error => {
-                              console.error('❌ Error incrementing view:', error);
-                              // Remove from sessionStorage on error so it can retry
-                              sessionStorage.removeItem(viewKey);
-                              viewCountedRef.current = false;
-                            });
-                        } else if (!alreadyCounted && userClickTimeRef.current >= 3 && video.currentTime >= 3) {
-                          console.log('⚠️ User clicked too late (after 3s), view NOT counted');
-                          // Mark as "attempted" so we don't keep logging this
-                          sessionStorage.setItem(viewKey, 'false');
-                        }
-                      }}
-                      onPlay={() => {
-                        console.log('▶️ Video onPlay event fired');
-                        setIsPlaying(true);
-                      }}
-                      onClick={() => {
-                        // Mark user interaction and record the video time when they clicked
-                        if (!userInteractedRef.current) {
-                          userInteractedRef.current = true;
-                          const currentVideoTime = videoRef.current?.currentTime || 0;
-                          userClickTimeRef.current = currentVideoTime;
-                          console.log(`👆 User clicked on video at ${currentVideoTime.toFixed(1)}s`);
-                        }
-                      }}
-                      onPause={() => {
-                        console.log('⏸️ Video onPause event fired');
-                        setIsPlaying(false);
-                      }}
-                    />
-                  ) : (
-                    <div className={styles.videoOverlay} />
-                  )}
-
-                  {/* Play/Pause Button */}
-                  {(!videoData || !videoData.videoUrl) && (
-                    <button className={styles.playButton} onClick={handlePlayPause}>
-                      <span className="material-icons">
-                        {isPlaying ? 'pause' : 'play_arrow'}
-                      </span>
-                    </button>
-                  )}
-
-                  {/* Cast Button */}
-                  <button className={styles.castButton}>
-                    <span className="material-icons">cast</span>
-                    <span>Cast</span>
-                  </button>
-
-                  {/* Video Controls */}
-                  <div className={styles.videoControls}>
-                    <span className={styles.timeDisplay}>{formatTime(currentTime)}</span>
-
-                    <div className={styles.progressBar} onClick={handleProgressClick}>
-                      <div
-                        className={styles.progressFill}
-                        style={{ width: `${(currentTime / duration) * 100}%` }}
-                      />
-                      <div
-                        className={styles.progressHandle}
-                        style={{ left: `${(currentTime / duration) * 100}%` }}
-                      />
-                    </div>
-
-                    <span className={styles.timeDisplay}>{formatTime(duration)}</span>
-
-                    {/* Volume Control */}
-                    <div
-                      className={styles.volumeControl}
-                      onMouseEnter={() => setShowVolumeSlider(true)}
-                      onMouseLeave={() => setShowVolumeSlider(false)}
-                    >
-                      <button className={styles.controlButton}>
-                        <span className="material-icons">
-                          {volume === 0 ? 'volume_off' : volume < 50 ? 'volume_down' : 'volume_up'}
-                        </span>
-                      </button>
-                      {showVolumeSlider && (
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={volume}
-                          onChange={(e) => setVolume(Number(e.target.value))}
-                          className={styles.volumeSlider}
-                        />
-                      )}
-                    </div>
-
-                    {/* Fullscreen */}
-                    <button className={styles.controlButton} onClick={handleFullscreen}>
-                      <span className="material-icons">
-                        {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Video Info */}
-              {videoData && (
-                <div className={styles.videoInfo}>
-                  <h1 className={styles.videoTitle}>{videoData.title}</h1>
-
-                  <div className={styles.videoMeta}>
-                    <span className={styles.authorInfo}>
-                      <div className={styles.authorAvatar} />
-                      <span>{videoData.author}</span>
-                    </span>
-                    <span className={styles.separator}>•</span>
-                    <span>{videoData.views} views</span>
-                    <span className={styles.separator}>•</span>
-                    <span>{videoData.uploadedAt}</span>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className={styles.actionButtons}>
-                    <button className={styles.actionBtn}>
-                      <span>👍</span>
-                      <span>{videoData.likes}</span>
-                    </button>
-                    <button className={styles.actionBtn}>
-                      <span>👎</span>
-                      <span>Dislike</span>
-                    </button>
-                    <button className={styles.actionBtn}>
-                      <span>💬</span>
-                      <span>Comments</span>
-                    </button>
-                    <button className={styles.actionBtn}>
-                      <span>🔗</span>
-                      <span>Share</span>
-                    </button>
-                    <button className={styles.actionBtn}>
-                      <span className={styles.ratingStars}>{renderStars(videoData.rating)}</span>
-                      <span>{videoData.rating}</span>
-                    </button>
-                  </div>
-
-                  {/* Description */}
-                  <div className={styles.descriptionSection}>
-                    <button
-                      className={styles.descriptionToggle}
-                      onClick={() => setShowDescription(!showDescription)}
-                    >
-                      {showDescription ? 'Hide description' : 'Show description'}
-                      <span className="material-icons">
-                        {showDescription ? 'expand_less' : 'expand_more'}
-                      </span>
-                    </button>
-
-                    {showDescription && (
-                      <div className={styles.description}>
-                        <p>{videoData.description}</p>
-                        <div className={styles.tags}>
-                          {videoData.tags.map((tag, i) => (
-                            <span key={i} className={styles.tag}>{tag}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+            <div className={styles.videoBackground}>
+              {/* Video Player */}
+              {videoData && videoData.videoUrl ? (
+                <video
+                  ref={videoRef}
+                  src={videoData.videoUrl}
+                  poster={videoData.thumbnailUrl}
+                  controls
+                  className={styles.videoElement}
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000' }}
+                  onLoadedMetadata={(e) => {
+                    const video = e.currentTarget;
+                    setDuration(video.duration);
+                  }}
+                  onTimeUpdate={(e) => {
+                    const video = e.currentTarget;
+                    setCurrentTime(video.currentTime);
+                  }}
+                  onPlay={() => {
+                    setIsPlaying(true);
+                  }}
+                  onPause={() => setIsPlaying(false)}
+                />
+              ) : (
+                <div className={styles.videoOverlay} />
+              )}
+              
+              {/* Play/Pause Button */}
+              {(!videoData || !videoData.videoUrl) && (
+                <button className={styles.playButton} onClick={handlePlayPause}>
+                  <span className="material-icons">
+                    {isPlaying ? 'pause' : 'play_arrow'}
+                  </span>
+                </button>
               )}
 
-              {/* Related Videos - Mobile */}
-              <div className={styles.relatedVideosMobile}>
-                <h3 className={styles.sectionTitle}>Related Videos</h3>
-                <div className={styles.relatedGrid}>
-                  {defaultRelatedVideos.map((video) => (
-                    <div
-                      key={video.id}
-                      className={styles.relatedCard}
-                      onClick={() => handleVideoClick(video.id)}
-                    >
-                      <div className={styles.relatedThumbnail}>
-                        <span className={styles.videoDuration}>{video.duration}</span>
-                      </div>
-                      <div className={styles.relatedInfo}>
-                        <h4>{video.title}</h4>
-                        <span>{video.author}</span>
-                        <span>{video.views} views • {renderStars(video.rating)} {video.rating}</span>
-                      </div>
-                    </div>
-                  ))}
+              {/* Cast Button */}
+              <button className={styles.castButton}>
+                <span className="material-icons">cast</span>
+                <span>Cast</span>
+              </button>
+
+              {/* Video Controls */}
+              <div className={styles.videoControls}>
+                <span className={styles.timeDisplay}>{formatTime(currentTime)}</span>
+                
+                <div className={styles.progressBar} onClick={handleProgressClick}>
+                  <div 
+                    className={styles.progressFill} 
+                    style={{ width: `${(currentTime / duration) * 100}%` }}
+                  />
+                  <div 
+                    className={styles.progressHandle}
+                    style={{ left: `${(currentTime / duration) * 100}%` }}
+                  />
                 </div>
+                
+                <span className={styles.timeDisplay}>{formatTime(duration)}</span>
+
+                {/* Volume Control */}
+                <div 
+                  className={styles.volumeControl}
+                  onMouseEnter={() => setShowVolumeSlider(true)}
+                  onMouseLeave={() => setShowVolumeSlider(false)}
+                >
+                  <button className={styles.controlButton}>
+                    <span className="material-icons">
+                      {volume === 0 ? 'volume_off' : volume < 50 ? 'volume_down' : 'volume_up'}
+                    </span>
+                  </button>
+                  {showVolumeSlider && (
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={volume}
+                      onChange={(e) => setVolume(Number(e.target.value))}
+                      className={styles.volumeSlider}
+                    />
+                  )}
+                </div>
+
+                {/* Fullscreen */}
+                <button className={styles.controlButton} onClick={handleFullscreen}>
+                  <span className="material-icons">
+                    {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
+                  </span>
+                </button>
               </div>
+            </div>
+          </div>
+
+          {/* Video Info */}
+          {videoData && (
+            <div className={styles.videoInfo}>
+              <h1 className={styles.videoTitle}>{videoData.title}</h1>
+              
+              <div className={styles.videoMeta}>
+                <span className={styles.authorInfo}>
+                  <div className={styles.authorAvatar} />
+                  <span>{videoData.author}</span>
+                </span>
+                <span className={styles.separator}>•</span>
+                <span>{videoData.views} views</span>
+                <span className={styles.separator}>•</span>
+                <span>{videoData.uploadedAt}</span>
+              </div>
+
+              {/* Action Buttons - Upvote/Downvote Only */}
+              <div className={styles.actionButtons}>
+                <button 
+                  className={`${styles.actionBtn} ${userVote === 'upvote' ? styles.voted : ''}`}
+                  onClick={handleUpvote}
+                  title={userVote === 'upvote' ? 'Remove upvote' : 'Upvote this video'}
+                >
+                  <span style={{ fontSize: '1.3em' }}>👍</span>
+                  <span>Upvote</span>
+                  {upvoteCount > 0 && <span className={styles.voteCount}>({upvoteCount})</span>}
+                </button>
+                <button 
+                  className={`${styles.actionBtn} ${userVote === 'downvote' ? styles.voted : ''}`}
+                  onClick={handleDownvote}
+                  title={userVote === 'downvote' ? 'Remove downvote' : 'Downvote this video'}
+                >
+                  <span style={{ fontSize: '1.3em' }}>👎</span>
+                  <span>Downvote</span>
+                  {downvoteCount > 0 && <span className={styles.voteCount}>({downvoteCount})</span>}
+                </button>
+              </div>
+
+              {/* Description */}
+              <div className={styles.descriptionSection}>
+                <button 
+                  className={styles.descriptionToggle}
+                  onClick={() => setShowDescription(!showDescription)}
+                >
+                  {showDescription ? 'Hide description' : 'Show description'}
+                  <span className="material-icons">
+                    {showDescription ? 'expand_less' : 'expand_more'}
+                  </span>
+                </button>
+                
+                {showDescription && (
+                  <div className={styles.description}>
+                    <p>{videoData.description}</p>
+                    <div className={styles.tags}>
+                      {videoData.tags.map((tag, i) => (
+                        <span key={i} className={styles.tag}>{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Related Videos - Mobile */}
+          <div className={styles.relatedVideosMobile}>
+            <h3 className={styles.sectionTitle}>Related Videos</h3>
+            <div className={styles.relatedGrid}>
+              {defaultRelatedVideos.map((video) => (
+                <div 
+                  key={video.id} 
+                  className={styles.relatedCard}
+                  onClick={() => handleVideoClick(video.id)}
+                >
+                  <div className={styles.relatedThumbnail}>
+                    <span className={styles.videoDuration}>{video.duration}</span>
+                  </div>
+                  <div className={styles.relatedInfo}>
+                    <h4>{video.title}</h4>
+                    <span>{video.author}</span>
+                    <span>{video.views} views • {renderStars(video.rating)} {video.rating}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
             </>
           )}
         </div>
@@ -539,7 +604,7 @@ const VPlayer = () => {
           <div className={styles.commentsList}>
             {defaultComments.map((comment) => (
               <div key={comment.id} className={styles.comment}>
-                <div
+                <div 
                   className={styles.commentAvatar}
                   style={{ background: comment.avatar }}
                 />
@@ -560,7 +625,7 @@ const VPlayer = () => {
 
           {/* Comment Input */}
           <div className={styles.commentInput}>
-            <div
+            <div 
               className={styles.commentAvatar}
               style={{ background: 'linear-gradient(135deg, #ff8a3c, #ffd56a)' }}
             />
@@ -572,7 +637,7 @@ const VPlayer = () => {
                 onChange={(e) => setCommentText(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleCommentSubmit()}
               />
-              <button
+              <button 
                 className={styles.sendButton}
                 onClick={handleCommentSubmit}
               >
@@ -585,8 +650,8 @@ const VPlayer = () => {
           <div className={styles.relatedVideosDesktop}>
             <h3 className={styles.sectionTitle}>Up Next</h3>
             {relatedVideos && relatedVideos.length > 0 && relatedVideos.slice(0, 3).map((video) => (
-              <div
-                key={video.id}
+              <div 
+                key={video.id} 
                 className={styles.relatedCardSmall}
                 onClick={() => handleVideoClick(video.id)}
               >
