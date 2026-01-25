@@ -1,16 +1,16 @@
 import { type FunctionComponent, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useNavbar from '../../hooks/useNavbar';
 import useFooter from '../../hooks/useFooter';
 import styles from '../../styles/Leaderboard.module.css';
 
-interface LeaderboardUser {
-    _id: string; // User ID
+interface LeaderboardEntry {
+    _id: string;
+    title: string;
     netScore: number;
-    totalUpvotes: number;
-    totalDownvotes: number;
-    totalViews: number;
-    entryCount: number;
-    avgRating: number;
+    upvotes: number;
+    downvotes: number;
+    views: number;
     type: 'video' | 'audio' | 'blog';
     user: {
         _id: string;
@@ -21,14 +21,15 @@ interface LeaderboardUser {
 }
 
 interface LeaderboardData {
-    videos: LeaderboardUser[];
-    audios: LeaderboardUser[];
-    blogs: LeaderboardUser[];
+    videos: LeaderboardEntry[];
+    audios: LeaderboardEntry[];
+    blogs: LeaderboardEntry[];
 }
 
 const Leaderboard: FunctionComponent = () => {
     const { Navbar } = useNavbar();
     const { Footer } = useFooter();
+    const navigate = useNavigate();
     const [data, setData] = useState<LeaderboardData>({ videos: [], audios: [], blogs: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -61,30 +62,13 @@ const Leaderboard: FunctionComponent = () => {
         fetchLeaderboard();
     }, []);
 
-    const renderStars = (rating: number) => {
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 >= 0.5;
-        let stars = '★'.repeat(fullStars);
-        if (hasHalfStar) stars += '☆'; // Simple representation
-        if (fullStars < 5 && !hasHalfStar) stars += '☆'.repeat(5 - fullStars);
-        return stars.substring(0, 5); // Ensure max 5 char length roughly
-    };
-
-    const getBadgeClass = (type: string) => {
-        switch (type) {
-            case 'video': return styles.video2;
-            case 'audio': return styles.audioBadge;
-            case 'blog': return styles.blogBadge;
-            default: return styles.video2;
-        }
-    };
-
-    const getBadgeText = (type: string) => {
-        switch (type) {
-            case 'video': return 'Top Video Creator';
-            case 'audio': return 'Top Audio Artist';
-            case 'blog': return 'Top Blogger';
-            default: return 'Creator';
+    const handleContentClick = (entry: LeaderboardEntry) => {
+        if (entry.type === 'video') {
+            navigate(`/videos/${entry._id}`);
+        } else if (entry.type === 'audio') {
+            navigate(`/audios/${entry._id}`);
+        } else if (entry.type === 'blog') {
+            navigate(`/blogs/${entry._id}`);
         }
     };
 
@@ -93,15 +77,13 @@ const Leaderboard: FunctionComponent = () => {
 
     // Top 3 for Podium
     const topThree = currentData.slice(0, 3);
-    // Rest for Table
-    const restList = currentData.slice(3);
 
     return (
         <div className={styles.leaderboard}>
             <Navbar />
             <div className={styles.main}>
                 <b className={styles.heading1}>Talent Leaderboard</b>
-                <div className={styles.discoverTheTop}>Discover the top creators across Video, Audio, and Blog portals.</div>
+                <div className={styles.discoverTheTop}>Discover the top content across Video, Audio, and Blog portals.</div>
 
                 {/* Tabs */}
                 <div className={styles.tabContainer}>
@@ -136,25 +118,25 @@ const Leaderboard: FunctionComponent = () => {
                             <div className={styles.podiumContainer}>
                                 {/* Second Place */}
                                 {topThree[1] && (
-                                    <div className={`${styles.podiumCard} ${styles.secondPlace}`}>
+                                    <div className={`${styles.podiumCard} ${styles.secondPlace}`} onClick={() => handleContentClick(topThree[1])}>
                                         <div className={styles.rankBadge}>#2</div>
                                         <div
                                             className={styles.cardAvatar}
-                                            style={{ background: 'linear-gradient(135deg, #cbd5e1, #94a3b8)' }} // Placeholder if no image
+                                            style={{ background: 'linear-gradient(135deg, #cbd5e1, #94a3b8)' }}
                                         />
                                         <div className={styles.cardName}>{topThree[1].user.fullName}</div>
                                         <div className={styles.cardHandle}>@{topThree[1].user.username}</div>
+                                        <div className={styles.cardTitle}>{topThree[1].title}</div>
                                         <div className={styles.cardStats}>
-                                            {(topThree[1].avgRating || 0).toFixed(1)} avg • {topThree[1].totalUpvotes} votes
+                                            👍 {topThree[1].upvotes} • 👎 {topThree[1].downvotes} • 👁 {topThree[1].views}
                                         </div>
-                                        <div className={styles.cardScore}>Score: {topThree[1].netScore}</div>
-                                        {/* <span className={styles.viewProfileBtn}>View Profile</span> */}
+                                        <div className={styles.cardScore}>Net Score: {topThree[1].netScore}</div>
                                     </div>
                                 )}
 
                                 {/* First Place */}
                                 {topThree[0] && (
-                                    <div className={`${styles.podiumCard} ${styles.firstPlace}`}>
+                                    <div className={`${styles.podiumCard} ${styles.firstPlace}`} onClick={() => handleContentClick(topThree[0])}>
                                         <div className={styles.rankBadge} style={{ background: '#f59e0b', color: 'black' }}>#1 Overall</div>
                                         <div
                                             className={styles.cardAvatar}
@@ -162,17 +144,17 @@ const Leaderboard: FunctionComponent = () => {
                                         />
                                         <div className={styles.cardName}>{topThree[0].user.fullName}</div>
                                         <div className={styles.cardHandle}>@{topThree[0].user.username}</div>
+                                        <div className={styles.cardTitle}>{topThree[0].title}</div>
                                         <div className={styles.cardStats}>
-                                            {topThree[0].entryCount} entries • {topThree[0].totalViews} views
+                                            👍 {topThree[0].upvotes} • 👎 {topThree[0].downvotes} • 👁 {topThree[0].views}
                                         </div>
-                                        <div className={styles.cardScore}>Engagement Score: {topThree[0].netScore}</div>
-                                        <span className={styles.viewProfileBtn}>{getBadgeText(activeTab)}</span>
+                                        <div className={styles.cardScore}>Net Score: {topThree[0].netScore}</div>
                                     </div>
                                 )}
 
                                 {/* Third Place */}
                                 {topThree[2] && (
-                                    <div className={`${styles.podiumCard} ${styles.thirdPlace}`}>
+                                    <div className={`${styles.podiumCard} ${styles.thirdPlace}`} onClick={() => handleContentClick(topThree[2])}>
                                         <div className={styles.rankBadge}>#3</div>
                                         <div
                                             className={styles.cardAvatar}
@@ -180,28 +162,29 @@ const Leaderboard: FunctionComponent = () => {
                                         />
                                         <div className={styles.cardName}>{topThree[2].user.fullName}</div>
                                         <div className={styles.cardHandle}>@{topThree[2].user.username}</div>
+                                        <div className={styles.cardTitle}>{topThree[2].title}</div>
                                         <div className={styles.cardStats}>
-                                            {(topThree[2].avgRating || 0).toFixed(1)} avg • 0 requests
+                                            👍 {topThree[2].upvotes} • 👎 {topThree[2].downvotes} • 👁 {topThree[2].views}
                                         </div>
-                                        <div className={styles.cardScore}>Score: {topThree[2].netScore}</div>
+                                        <div className={styles.cardScore}>Net Score: {topThree[2].netScore}</div>
                                     </div>
                                 )}
                             </div>
                         )}
 
-                        {/* Detailed Table Section (Rank 4+) or All if user prefers list */}
+                        {/* Detailed Table Section */}
                         <div className={styles.section2}>
-                            <b className={styles.topTalentsThis}>Top Talents (this semester)</b>
-                            <div className={styles.combinedRankingsFrom}>Combined rankings from {activeTab} portals.</div>
+                            <b className={styles.topTalentsThis}>Top Content (this semester)</b>
+                            <div className={styles.combinedRankingsFrom}>Top ranked {activeTab} content based on net score (Upvotes - Downvotes).</div>
 
                             <div className={styles.table}>
                                 <div className={styles.headerRow}>
                                     <div className={styles.cell}>Rank</div>
-                                    <div className={styles.cell2}>Talent</div>
-                                    <div className={styles.cell3}>Primary Portal</div>
-                                    <div className={styles.cell4}>Avg. Rating</div>
-                                    <div className={styles.cell5}>Total Upvotes</div>
-                                    <div className={styles.cell6}>Entries</div>
+                                    <div className={styles.cell2}>Creator</div>
+                                    <div className={styles.cell3}>Content Title</div>
+                                    <div className={styles.cell4}>Upvotes</div>
+                                    <div className={styles.cell5}>Downvotes</div>
+                                    <div className={styles.cell6}>Views</div>
                                     <div className={styles.cell7}>Net Score</div>
                                     <div className={styles.cell8}></div>
                                 </div>
@@ -214,17 +197,16 @@ const Leaderboard: FunctionComponent = () => {
                                                     <b className={styles.eashaElehi}>{entry.user.fullName || entry.user.username}</b>
                                                     <div className={styles.eashaelehi442}>@{entry.user.username}</div>
                                                 </div>
-                                                <div className={styles.data2}>
-                                                    <div className={getBadgeClass(activeTab)}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</div>
+                                                <div className={styles.data2} onClick={() => handleContentClick(entry)} style={{ cursor: 'pointer' }}>
+                                                    <div className={styles.contentTitle} title={entry.title}>
+                                                        {entry.title.length > 30 ? entry.title.substring(0, 30) + '...' : entry.title}
+                                                    </div>
                                                 </div>
-                                                <div className={styles.data3}>
-                                                    <div className={styles.div3}>{renderStars(entry.avgRating || 0)}</div>
-                                                    <div className={styles.div4}>{(entry.avgRating || 0).toFixed(1)}</div>
-                                                </div>
-                                                <div className={styles.data326}>{entry.totalUpvotes}</div>
-                                                <div className={styles.data25}>{entry.entryCount}</div>
+                                                <div className={styles.data326}>{entry.upvotes}</div>
+                                                <div className={styles.data327}>{entry.downvotes}</div>
+                                                <div className={styles.data25}>{entry.views.toLocaleString()}</div>
                                                 <b className={styles.data975}>{entry.netScore}</b>
-                                                <div className={styles.dataView}>View profile</div>
+                                                <div className={styles.dataView} onClick={() => handleContentClick(entry)}>View</div>
                                             </div>
                                         ))
                                     ) : (
