@@ -7,7 +7,7 @@ type SignupStep = 'form' | 'verify';
 
 const SignUp = () => {
   const navigate = useNavigate();
-  
+
   // Form fields
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -16,11 +16,11 @@ const SignUp = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   // Verification
   const [verificationCode, setVerificationCode] = useState('');
   const [step, setStep] = useState<SignupStep>('form');
-  
+
   // UI states
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -119,7 +119,7 @@ const SignUp = () => {
       authAPI.saveAuth(response.token, response.user);
 
       setSuccess('Account created successfully!');
-      
+
       // Navigate to home after a brief delay
       setTimeout(() => navigate('/'), 1000);
     } catch (err) {
@@ -132,7 +132,7 @@ const SignUp = () => {
   // Resend verification code
   const handleResendCode = useCallback(async () => {
     if (resendCooldown > 0) return;
-    
+
     setError('');
     setSuccess('');
     setLoading(true);
@@ -169,15 +169,15 @@ const SignUp = () => {
     <div className={styles.container}>
       <b className={styles.heading1}>Verify Your Email</b>
       <div className={styles.createYourChapnion}>
-        Enter the 6-digit code sent to<br/>
+        Enter the 6-digit code sent to<br />
         <strong style={{ color: '#ff8a3c' }}>{email}</strong>
       </div>
-      
+
       {/* Success Message */}
       {success && (
-        <div style={{ 
-          color: '#059669', 
-          fontSize: '13px', 
+        <div style={{
+          color: '#059669',
+          fontSize: '13px',
           marginBottom: '12px',
           padding: '10px',
           backgroundColor: '#ecfdf5',
@@ -187,12 +187,12 @@ const SignUp = () => {
           {success}
         </div>
       )}
-      
+
       {/* Error Message */}
       {error && (
-        <div style={{ 
-          color: '#dc2626', 
-          fontSize: '13px', 
+        <div style={{
+          color: '#dc2626',
+          fontSize: '13px',
           marginBottom: '12px',
           padding: '10px',
           backgroundColor: '#fef2f2',
@@ -202,10 +202,10 @@ const SignUp = () => {
           {error}
         </div>
       )}
-      
+
       <div className={styles.form}>
         {/* Verification Code Input */}
-        <input 
+        <input
           type="text"
           className={styles.input}
           placeholder="Enter 6-digit code"
@@ -214,20 +214,25 @@ const SignUp = () => {
             const value = e.target.value.replace(/\D/g, '').slice(0, 6);
             setVerificationCode(value);
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !loading && verificationCode.length === 6) {
+              handleVerifyCode();
+            }
+          }}
           maxLength={6}
-          style={{ 
-            textAlign: 'center', 
-            letterSpacing: '8px', 
+          style={{
+            textAlign: 'center',
+            letterSpacing: '8px',
             fontSize: '24px',
             fontWeight: 'bold'
           }}
         />
-        
+
         {/* Verify Button */}
-        <div 
-          className={styles.button} 
+        <div
+          className={styles.button}
           onClick={handleVerifyCode}
-          style={{ 
+          style={{
             opacity: loading ? 0.7 : 1,
             pointerEvents: loading ? 'none' : 'auto'
           }}
@@ -238,16 +243,16 @@ const SignUp = () => {
         </div>
 
         {/* Resend Code */}
-        <div style={{ 
-          textAlign: 'center', 
+        <div style={{
+          textAlign: 'center',
           marginTop: '16px',
           color: '#6b7280',
           fontSize: '14px'
         }}>
           Didn't receive the code?{' '}
-          <span 
+          <span
             onClick={handleResendCode}
-            style={{ 
+            style={{
               color: resendCooldown > 0 ? '#9ca3af' : '#ff8a3c',
               cursor: resendCooldown > 0 ? 'default' : 'pointer',
               fontWeight: '600'
@@ -258,9 +263,9 @@ const SignUp = () => {
         </div>
 
         {/* Back Button */}
-        <div 
-          style={{ 
-            textAlign: 'center', 
+        <div
+          style={{
+            textAlign: 'center',
             marginTop: '12px',
             color: '#6b7280',
             fontSize: '14px',
@@ -279,12 +284,12 @@ const SignUp = () => {
     <div className={styles.container}>
       <b className={styles.heading1}>Join the Hunt!</b>
       <div className={styles.createYourChapnion}>Create your champion account</div>
-      
+
       {/* Error Message */}
       {error && (
-        <div style={{ 
-          color: '#dc2626', 
-          fontSize: '13px', 
+        <div style={{
+          color: '#dc2626',
+          fontSize: '13px',
           marginBottom: '12px',
           padding: '10px',
           backgroundColor: '#fef2f2',
@@ -294,38 +299,58 @@ const SignUp = () => {
           {error}
         </div>
       )}
-      
+
       <div className={styles.form}>
-        <input 
+        <input
           type="text"
           className={styles.input}
           placeholder="Enter Full Name"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !loading) {
+              handleSendVerification();
+            }
+          }}
         />
-        <input 
+        <input
           type="email"
           className={styles.input2}
           placeholder="Enter UIU Email (e.g., name@uiu.ac.bd)"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !loading) {
+              handleSendVerification();
+            }
+          }}
         />
-        <input 
+        <input
           type="text"
           className={styles.input3}
           placeholder="Enter Student ID (optional)"
           value={studentId}
           onChange={(e) => setStudentId(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !loading) {
+              handleSendVerification();
+            }
+          }}
         />
         <div className={styles.input4}>
-          <input 
+          <input
             type={showPassword ? 'text' : 'password'}
             className={styles.createPassword}
             placeholder="Create Password (min 6 characters)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !loading) {
+                handleSendVerification();
+              }
+            }}
           />
-          <span 
+          <span
             className={styles.buttonIcon}
             onClick={() => setShowPassword(!showPassword)}
             style={{ cursor: 'pointer' }}
@@ -334,14 +359,19 @@ const SignUp = () => {
           </span>
         </div>
         <div className={styles.input5}>
-          <input 
+          <input
             type={showConfirmPassword ? 'text' : 'password'}
             className={styles.confirmPassword}
             placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !loading) {
+                handleSendVerification();
+              }
+            }}
           />
-          <span 
+          <span
             className={styles.buttonIcon2}
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             style={{ cursor: 'pointer' }}
@@ -349,10 +379,10 @@ const SignUp = () => {
             {showConfirmPassword ? '🙈' : '👁️'}
           </span>
         </div>
-        <div 
-          className={styles.button} 
+        <div
+          className={styles.button}
           onClick={handleSendVerification}
-          style={{ 
+          style={{
             opacity: loading ? 0.7 : 1,
             pointerEvents: loading ? 'none' : 'auto'
           }}
@@ -370,7 +400,7 @@ const SignUp = () => {
       </div>
     </div>
   );
-  	
+
   return (
     <div className={styles.signup}>
       <div className={styles.backgroundverticalborder}>
