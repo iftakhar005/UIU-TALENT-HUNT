@@ -438,96 +438,83 @@ const AudioPlayer = () => {
         </div>
 
         {/* Comments Section */}
-        <div style={{
-          backgroundColor: 'white',
-          padding: '24px',
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px' }}>
+        <div className={styles.commentsSection}>
+          <h2 className={styles.commentsTitle}>
             Comments ({audioData.comments?.length || 0})
           </h2>
 
           {/* Comment Form */}
-          <div style={{ marginBottom: '30px', display: 'flex', gap: '12px' }}>
-            <img
-              src="https://via.placeholder.com/40x40"
-              alt="Your avatar"
+          <div className={styles.commentForm}>
+            <div
+              className={styles.userAvatar}
               style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                flexShrink: 0
+                background: 'linear-gradient(135deg, #ff8a3c, #ffd56a)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontWeight: '600',
+                fontSize: '16px'
               }}
-            />
-            <div style={{ flex: 1 }}>
-              <textarea
-                placeholder="Add a comment..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                style={{
-                  width: '100%',
-                  minHeight: '80px',
-                  padding: '12px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  resize: 'vertical',
-                  fontFamily: 'inherit'
-                }}
-              />
-              <button
-                onClick={handlePostComment}
-                disabled={!newComment.trim()}
-                style={{
-                  marginTop: '8px',
-                  padding: '8px 16px',
-                  backgroundColor: newComment.trim() ? '#3b82f6' : '#d1d5db',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: newComment.trim() ? 'pointer' : 'not-allowed',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}
-              >
-                Post Comment
-              </button>
+            >
+              {localStorage.getItem('fullName')?.[0] || '?'}
+            </div>
+            <div className={styles.formContent}>
+              <div className={styles.inputWrapper}>
+                <input
+                  type="text"
+                  placeholder="Add a comment..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handlePostComment()}
+                />
+                <button
+                  className={styles.sendButton}
+                  onClick={handlePostComment}
+                  disabled={!newComment.trim()}
+                >
+                  ➤
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Comments List */}
-          {audioData.comments && audioData.comments.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {audioData.comments.map((comment) => (
-                <div key={comment._id} style={{ display: 'flex', gap: '12px' }}>
-                  <img
-                    src={comment.user?.avatar || 'https://via.placeholder.com/40x40'}
-                    alt={comment.user?.fullName || 'User'}
+          <div className={styles.commentsList}>
+            {audioData.comments && Array.isArray(audioData.comments) && audioData.comments.length > 0 ? (
+              audioData.comments.map((comment) => (
+                <div key={comment._id} className={styles.comment}>
+                  <div
+                    className={styles.commentAvatar}
                     style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      flexShrink: 0
+                      background: comment.user?.avatar || 'linear-gradient(135deg, #4c8dff, #7fe2ff)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontWeight: '600',
+                      fontSize: '14px'
                     }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <strong style={{ fontSize: '14px' }}>
+                  >
+                    {!comment.user?.avatar && (comment.user?.fullName?.[0] || '?')}
+                  </div>
+                  <div className={styles.commentContent}>
+                    <div className={styles.commentHeader}>
+                      <strong className={styles.commentAuthor}>
                         {comment.user?.fullName || comment.user?.username || 'Anonymous'}
                       </strong>
-                      <span style={{ fontSize: '12px', color: '#9ca3af' }}>{timeAgo(comment.createdAt)}</span>
+                      <span className={styles.commentTime}>{timeAgo(comment.createdAt)}</span>
                     </div>
-                    <p style={{ fontSize: '14px', color: '#4b5563', margin: 0 }}>{comment.text}</p>
+                    <p className={styles.commentText}>{comment.text}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p style={{ textAlign: 'center', color: '#6b7280', padding: '20px' }}>
-              No comments yet. Be the first to comment!
-            </p>
-          )}
+              ))
+            ) : (
+              <p style={{ textAlign: 'center', color: '#6b7280', padding: '20px' }}>
+                No comments yet. Be the first to comment!
+              </p>
+            )}
+          </div>
         </div>
 
         <button

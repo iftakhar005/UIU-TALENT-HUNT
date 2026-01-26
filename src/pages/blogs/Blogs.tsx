@@ -135,7 +135,7 @@ const Blogs = () => {
         )}
         <div className={styles.articleStats}>
           {article.views && <div className={styles.stat}><span className={styles.statIcon}>👁</span><span className={styles.statText}>{article.views} views</span></div>}
-          {article.comments && <div className={styles.stat}><span className={styles.statIcon}>💬</span><span className={styles.statText}>{article.comments} comments</span></div>}
+          {article.comments && <div className={styles.stat}><span className={styles.statIcon}>💬</span><span className={styles.statText}>{Array.isArray(article.comments) ? article.comments.length : article.comments} comments</span></div>}
           {article.rating && <div className={styles.stat}><span className={styles.statIcon}>★</span><span className={styles.statText}>{article.rating} rating</span></div>}
         </div>
         <div className={styles.articleTags}>

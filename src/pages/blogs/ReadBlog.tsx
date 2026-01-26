@@ -322,17 +322,32 @@ const ReadBlog = () => {
 
             {/* Comment Form */}
             <div className={styles.commentForm}>
-              <img
-                src="https://via.placeholder.com/40x40"
-                alt="Your avatar"
+              <div
                 className={styles.userAvatar}
-              />
+                style={{
+                  background: 'linear-gradient(135deg, #ff8a3c, #ffd56a)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontWeight: '600',
+                  fontSize: '16px'
+                }}
+              >
+                {localStorage.getItem('fullName')?.[0] || '?'}
+              </div>
               <div className={styles.formContent}>
                 <textarea
                   className={styles.commentInput}
                   placeholder="Add a comment..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handlePostComment();
+                    }
+                  }}
                 />
                 <button
                   className={styles.submitButton}
@@ -348,11 +363,20 @@ const ReadBlog = () => {
             {blog.comments && blog.comments.length > 0 ? (
               blog.comments.map((comment, idx) => (
                 <div key={comment._id || idx} className={styles.comment}>
-                  <img
-                    src={comment.user?.avatar || 'https://via.placeholder.com/40x40'}
-                    alt={comment.user?.fullName || 'User'}
+                  <div
                     className={styles.commentAvatar}
-                  />
+                    style={{
+                      background: comment.user?.avatar || 'linear-gradient(135deg, #4c8dff, #7fe2ff)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontWeight: '600',
+                      fontSize: '14px'
+                    }}
+                  >
+                    {!comment.user?.avatar && (comment.user?.fullName?.[0] || '?')}
+                  </div>
                   <div className={styles.commentContent}>
                     <div className={styles.commentHeader}>
                       <strong className={styles.commentAuthor}>

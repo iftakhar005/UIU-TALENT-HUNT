@@ -538,6 +538,156 @@
   border-radius: 999px;
 }
 
+/* Comments Section */
+.commentsSection {
+  background-color: #0b1120;
+  border-radius: 16px;
+    margin-left: 100px;
+    margin-right: 100px;
+  padding: 24px;
+  box-shadow: 0px 18px 40px rgba(15, 23, 42, 0.55);
+  margin-top: 20px;
+  max-width: 2000px;
+}
+
+.commentsTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #f9fafb;
+  margin: 0 0 20px 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #1f2937;
+  font-family: Poppins, sans-serif;
+}
+
+.commentForm {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  margin-left: 100px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #1f2937;
+  max-width: 1000px;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.formContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inputWrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1b1b1b;
+  border: 1px solid #333;
+  border-radius: 999px;
+  padding: 4px 4px 4px 16px;
+}
+
+.inputWrapper input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 13px;
+  outline: none;
+}
+
+.inputWrapper input::placeholder {
+  color: #6b7280;
+}
+
+.sendButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f97316, #facc15);
+  border: none;
+  color: #111;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.sendButton:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.comment {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid #1f2937;
+  margin-bottom: 0;
+}
+
+.comment:last-child {
+  border-bottom: none;
+}
+
+.commentAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.commentContent {
+  flex: 1;
+}
+
+.commentHeader {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.commentAuthor {
+  font-size: 14px;
+  color: #f9fafb;
+  font-family: Poppins, sans-serif;
+  font-weight: 600;
+}
+
+.commentTime {
+  font-size: 12px;
+  color: #9ca3af;
+  font-family: Poppins, sans-serif;
+}
+
+.commentText {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #d1d5db;
+  margin: 0;
+  font-family: Poppins, sans-serif;
+}
+
 @media (max-width: 1024px) {
   .aside {
     grid-template-columns: 1fr;
@@ -567,3 +717,4 @@
     padding: 8px 5px;
   }
 }
+

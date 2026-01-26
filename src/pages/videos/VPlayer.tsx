@@ -107,6 +107,7 @@ const VPlayer = () => {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [comments, setComments] = useState<any[]>([]);
   const [showDescription, setShowDescription] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -285,6 +286,9 @@ const VPlayer = () => {
           setUpvoteCount(video.upvotes || 0);
           setDownvoteCount(video.downvotes || 0);
 
+          // Set comments
+          setComments(video.comments || []);
+
           setVideoData({
             id: video._id,
             title: video.title || 'Untitled Video',
@@ -327,6 +331,20 @@ const VPlayer = () => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatCommentTime = (dateString: string) => {
+    const commentDate = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - commentDate.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`;
+    if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+    if (diffDays < 7) return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
+    return commentDate.toLocaleDateString();
   };
 
   const handlePlayPause = useCallback(async () => {
@@ -386,13 +404,38 @@ const VPlayer = () => {
     }
   }, []);
 
-  const handleCommentSubmit = useCallback(() => {
+  const handleCommentSubmit = useCallback(async () => {
     if (!checkAuth()) return;
-    if (commentText.trim()) {
-      // Add comment logic here
-      setCommentText('');
+    if (!commentText.trim()) return;
+    if (!id) return;
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${apiUrl}/videos/${id}/comment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: commentText })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to post comment');
+      }
+
+      const data = await response.json();
+      if (data.success && data.data.comments) {
+        setComments(data.data.comments);
+        setCommentText('');
+      }
+    } catch (error) {
+      console.error('Error posting comment:', error);
+      alert('Failed to post comment. Please try again.');
     }
-  }, [commentText]);
+  }, [commentText, id, checkAuth]);
 
   return (
     <div className={styles.vPlayer}>
@@ -608,32 +651,34 @@ const VPlayer = () => {
         <aside className={styles.commentsSidebar}>
           <div className={styles.commentsHeader}>
             <h2>Comments</h2>
-            <span className={styles.commentCount}>({defaultComments.length})</span>
+            <span className={styles.commentCount}>({comments.length})</span>
             <button className={styles.sortButton}>
               Top comments ▼
             </button>
           </div>
 
           <div className={styles.commentsList}>
-            {defaultComments.map((comment) => (
-              <div key={comment.id} className={styles.comment}>
-                <div
-                  className={styles.commentAvatar}
-                  style={{ background: comment.avatar }}
-                />
-                <div className={styles.commentContent}>
-                  <div className={styles.commentHeader}>
-                    <b>{comment.author}</b>
-                    <span>{comment.time}</span>
+            {comments.length > 0 ? (
+              comments.map((comment, index) => (
+                <div key={comment._id || index} className={styles.comment}>
+                  <div
+                    className={styles.commentAvatar}
+                    style={{ background: comment.user?.avatar || 'linear-gradient(135deg, #4c8dff, #7fe2ff)' }}
+                  >
+                    {!comment.user?.avatar && (comment.user?.fullName?.[0] || '?')}
                   </div>
-                  <p>{comment.text}</p>
-                  <div className={styles.commentActions}>
-                    <button>👍 {comment.likes}</button>
-                    <button>💬 Reply</button>
+                  <div className={styles.commentContent}>
+                    <div className={styles.commentHeader}>
+                      <b>{comment.user?.fullName || comment.user?.username || 'Anonymous'}</b>
+                      <span>{formatCommentTime(comment.createdAt)}</span>
+                    </div>
+                    <p>{comment.text}</p>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p style={{ textAlign: 'center', color: '#6b7280', padding: '20px' }}>No comments yet. Be the first to comment!</p>
+            )}
           </div>
 
           {/* Comment Input */}
@@ -645,7 +690,7 @@ const VPlayer = () => {
             <div className={styles.inputWrapper}>
               <input
                 type="text"
-                placeholder="Write a comment as Raihan..."
+                placeholder={`Write a comment${localStorage.getItem('fullName') ? ' as ' + localStorage.getItem('fullName') : ''}...`}
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleCommentSubmit()}
