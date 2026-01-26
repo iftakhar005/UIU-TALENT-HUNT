@@ -25,10 +25,18 @@ interface Blog {
 
 const Blogs = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const Navbar = useNavbar({ 
+    showSearch: true,
+    onSearch: setSearchQuery,
+    searchPlaceholder: "Search blogs...",
+    searchValue: searchQuery
+  });
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([]);
 
   // Fallback articles
   const fallbackArticles: Blog[] = [
@@ -81,6 +89,37 @@ const Blogs = () => {
 
     fetchBlogs();
   }, []);
+
+  // Initialize filtered blogs when blogs load
+  useEffect(() => {
+    setFilteredBlogs(blogs);
+  }, [blogs]);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Filter blogs based on debounced search query
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
+      setFilteredBlogs(blogs);
+    } else {
+      const query = debouncedSearchQuery.toLowerCase();
+      const filtered = blogs.filter(blog =>
+        blog.title?.toLowerCase().includes(query) ||
+        blog.content?.toLowerCase().includes(query) ||
+        blog.user?.fullName?.toLowerCase().includes(query) ||
+        blog.user?.username?.toLowerCase().includes(query) ||
+        blog.tags?.some(tag => tag.toLowerCase().includes(query))
+      );
+      setFilteredBlogs(filtered);
+    }
+  }, [debouncedSearchQuery, blogs]);
 
   const onArticleClick = useCallback((articleId: string | number) => {
     navigate(`/blogs/${articleId}`);
@@ -142,7 +181,7 @@ const Blogs = () => {
 
   return (
     <div className={styles.blogs}>
-      <Navbar />
+      {Navbar}
       <TabNavigation />
       
       <div className={styles.headerSection}>
@@ -153,9 +192,20 @@ const Blogs = () => {
       </div>
 
       <div className={styles.mainContent}>
-        <div className={styles.articleGrid}>
-          {blogs.map((article) => renderArticleCard(article))}
-        </div>
+        {searchQuery && (
+          <h3 style={{ marginBottom: '20px', color: '#6b7280' }}>
+            {filteredBlogs.length} {filteredBlogs.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+          </h3>
+        )}
+        {filteredBlogs.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6b7280' }}>
+            {searchQuery ? `No blogs found matching "${searchQuery}"` : 'No blogs available yet.'}
+          </div>
+        ) : (
+          <div className={styles.articleGrid}>
+            {filteredBlogs.map((article) => renderArticleCard(article))}
+          </div>
+        )}
       </div>
 
       <Footer />

@@ -6,7 +6,7 @@ import styles from '../styles/SubmitEntry.module.css';
 
 const SubmitEntry = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
   const [selectedOption, setSelectedOption] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -35,7 +35,7 @@ const SubmitEntry = () => {
 
   return (
     <div className={styles.submitEntry}>
-      <Navbar />
+      {Navbar}
       
       <div className={styles.mainContent}>
         <div className={styles.container}>

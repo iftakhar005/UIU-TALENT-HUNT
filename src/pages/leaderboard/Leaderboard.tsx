@@ -29,7 +29,7 @@ interface LeaderboardData {
 }
 
 const Leaderboard: FunctionComponent = () => {
-    const { Navbar } = useNavbar();
+    const Navbar = useNavbar();
     const { Footer } = useFooter();
     const navigate = useNavigate();
     const [data, setData] = useState<LeaderboardData>({ videos: [], audios: [], blogs: [] });
@@ -84,7 +84,7 @@ const Leaderboard: FunctionComponent = () => {
 
     return (
         <div className={styles.leaderboard}>
-            <Navbar />
+            {Navbar}
             <div className={styles.main}>
                 <b className={styles.heading1}>Talent Leaderboard</b>
                 <div className={styles.discoverTheTop}>Discover the top content across Video, Audio, and Blog portals.</div>

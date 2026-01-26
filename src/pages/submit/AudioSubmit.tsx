@@ -8,7 +8,7 @@ import { submissionAPI, CONTENT_CATEGORIES, type ContentCategory } from '../../s
 
 const AudioSubmit: FunctionComponent = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
 
   // Form state
@@ -95,7 +95,7 @@ const AudioSubmit: FunctionComponent = () => {
 
   return (
     <>
-      <Navbar />
+      {Navbar}
       <div className={styles.aSubmit}>
         <div className={styles.main}>
           <div className={styles.paragraph}>

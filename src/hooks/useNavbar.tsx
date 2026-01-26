@@ -1,8 +1,22 @@
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import styles from '../styles/HomePage.module.css';
 import { useNavigate } from 'react-router-dom';
 
-export default function useNavbar(showSearch: boolean = false) {
+interface NavbarOptions {
+  showSearch?: boolean;
+  onSearch?: (query: string) => void;
+  searchPlaceholder?: string;
+  searchValue?: string;
+}
+
+export default function useNavbar(options: NavbarOptions | boolean = false) {
+  // Handle backward compatibility - if boolean is passed, convert to options object
+  const config: NavbarOptions = typeof options === 'boolean' 
+    ? { showSearch: options } 
+    : options;
+
+  const { showSearch = false, onSearch, searchPlaceholder = "Search entries...", searchValue = "" } = config;
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -99,7 +113,7 @@ export default function useNavbar(showSearch: boolean = false) {
     return colors[Math.abs(hash) % colors.length];
   };
 
-  const Navbar = () => (
+  const Navbar = useMemo(() => (
     <div className={styles.header2}>
       <div className={styles.nav}>
         <div className={styles.uiuTalentHunt} onClick={onLogoClick} style={{ cursor: 'pointer' }}>
@@ -110,17 +124,22 @@ export default function useNavbar(showSearch: boolean = false) {
           <div className={styles.input}>
             <input
               type="text"
-              placeholder="Search entries..."
+              placeholder={searchPlaceholder}
               className={styles.searchEntries}
+              value={searchValue}
+              onChange={(e) => {
+                onSearch?.(e.target.value);
+              }}
+              autoComplete="off"
             />
             <span className={`material-icons ${styles.search}`}>search</span>
           </div>
         )}
-        
-        {/* Spacer to push items to the right when search is hidden */}
-        {!showSearch && <div style={{ flex: 1 }} />}
-        
-        <button className={styles.leaderboardBtn} onClick={() => navigate('/leaderboard')}>
+          
+          {/* Spacer to push items to the right when search is hidden */}
+          {!showSearch && <div style={{ flex: 1 }} />}
+          
+          <button className={styles.leaderboardBtn} onClick={() => navigate('/leaderboard')}>
           <span className="material-icons">leaderboard</span>
           Leaderboard
         </button>
@@ -337,7 +356,7 @@ export default function useNavbar(showSearch: boolean = false) {
         )}
       </div>
     </div>
-  );
+  ), [searchValue, showSearch, searchPlaceholder, isLoggedIn, user, showProfileMenu, onSearch, onLogoClick, navigate, onSubmitEntryClick, onLoginTextClick, onSignUpClick, onProfileClick, onLogout, getInitials, getAvatarColor]);
 
-  return { Navbar };
+  return Navbar;
 }

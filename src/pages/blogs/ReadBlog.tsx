@@ -45,7 +45,7 @@ interface BlogContent {
 
 const ReadBlog = () => {
   const { id } = useParams<{ id: string }>();
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
 
@@ -96,7 +96,7 @@ const ReadBlog = () => {
   if (loading) {
     return (
       <div className={styles.readBlog}>
-        <Navbar />
+        {Navbar}
         <TabNavigation />
         <div className={styles.mainContent}>
           <div className={styles.container}>
@@ -111,7 +111,7 @@ const ReadBlog = () => {
   if (error || !blog) {
     return (
       <div className={styles.readBlog}>
-        <Navbar />
+        {Navbar}
         <TabNavigation />
         <div className={styles.mainContent}>
           <div className={styles.container}>
@@ -228,7 +228,7 @@ const ReadBlog = () => {
 
   return (
     <div className={styles.readBlog}>
-      <Navbar />
+      {Navbar}
       <TabNavigation />
 
       <div className={styles.mainContent}>

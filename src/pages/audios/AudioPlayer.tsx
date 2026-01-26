@@ -48,7 +48,7 @@ interface AudioData {
 const AudioPlayer = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { Navbar } = useNavbar(true);
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
 
@@ -60,30 +60,50 @@ const AudioPlayer = () => {
   const [newComment, setNewComment] = useState('');
   const [playCounted, setPlayCounted] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const playCountTimeoutRef = useRef<number | null>(null);
 
-  // Track when audio starts playing and increment play count once
+  // Track when audio starts playing and increment play count after 3 seconds
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || playCounted || !id) return;
+    if (!audio || !id) return;
 
-    const handlePlay = async () => {
-      if (!playCounted) {
-        try {
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-          await fetch(`${apiUrl}/audios/${id}/play`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-          });
-          setPlayCounted(true);
-          console.log('\u2705 Play counted for audio:', id);
-        } catch (error) {
-          console.error('\u274c Error incrementing play:', error);
-        }
+    const handlePlay = () => {
+      if (!playCounted && !playCountTimeoutRef.current) {
+        // Wait 3 seconds before incrementing play count
+        playCountTimeoutRef.current = window.setTimeout(async () => {
+          try {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            await fetch(`${apiUrl}/audios/${id}/play`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            setPlayCounted(true);
+            console.log('\u2705 Play counted for audio:', id);
+          } catch (error) {
+            console.error('\u274c Error incrementing play:', error);
+          }
+          playCountTimeoutRef.current = null;
+        }, 3000);
+      }
+    };
+
+    const handlePause = () => {
+      // Cancel the timeout if user pauses before 3 seconds
+      if (playCountTimeoutRef.current && !playCounted) {
+        clearTimeout(playCountTimeoutRef.current);
+        playCountTimeoutRef.current = null;
       }
     };
 
     audio.addEventListener('play', handlePlay);
-    return () => audio.removeEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+    return () => {
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+      if (playCountTimeoutRef.current) {
+        clearTimeout(playCountTimeoutRef.current);
+      }
+    };
   }, [id, playCounted]);
 
   useEffect(() => {
@@ -234,7 +254,7 @@ const AudioPlayer = () => {
   if (loading) {
     return (
       <div className={styles.aPlayer}>
-        <Navbar />
+        {Navbar}
         <TabNavigation />
         <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>Loading audio...</div>
         <Footer />
@@ -255,7 +275,7 @@ const AudioPlayer = () => {
 
   return (
     <div className={styles.aPlayer}>
-      <Navbar />
+      {Navbar}
       <TabNavigation />
       <div className={styles.main}>
         {/* Header Section */}

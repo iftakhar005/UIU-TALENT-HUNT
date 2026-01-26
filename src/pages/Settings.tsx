@@ -20,7 +20,7 @@ interface UserSettings {
 
 const Settings: FunctionComponent = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
 
   const [settings, setSettings] = useState<UserSettings>({
@@ -114,7 +114,7 @@ const Settings: FunctionComponent = () => {
   if (loading) {
     return (
       <>
-        <Navbar />
+        {Navbar}
         <div className={styles.page}>
           <div className={styles.container}>Loading...</div>
         </div>
@@ -125,7 +125,7 @@ const Settings: FunctionComponent = () => {
 
   return (
     <>
-      <Navbar />
+      {Navbar}
       <div className={styles.page}>
         <div className={styles.container}>
           <div className={styles.header}>

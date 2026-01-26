@@ -95,7 +95,7 @@ const defaultRelatedVideos = [
 const VPlayer = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { Navbar } = useNavbar(true);
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
 
@@ -452,7 +452,7 @@ const VPlayer = () => {
 
   return (
     <div className={styles.vPlayer}>
-      <Navbar />
+      {Navbar}
       <TabNavigation />
 
       <div className={styles.mainContent}>

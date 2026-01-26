@@ -23,7 +23,7 @@ interface TrendingItem {
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
 
   const [trendingVideos, setTrendingVideos] = useState<TrendingItem[]>([]);
@@ -79,7 +79,7 @@ export default function HomePage() {
 
   return (
     <div className={styles.home}>
-      <Navbar />
+      {Navbar}
 
       {/* Hero Section */}
       <div className={styles.header}>

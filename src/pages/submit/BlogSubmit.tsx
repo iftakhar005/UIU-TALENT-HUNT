@@ -8,7 +8,7 @@ import { submissionAPI, CONTENT_CATEGORIES, type ContentCategory } from '../../s
 
 const BlogSubmit: FunctionComponent = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
 
   // Form state
@@ -131,7 +131,7 @@ const BlogSubmit: FunctionComponent = () => {
 
   return (
     <>
-      <Navbar />
+      {Navbar}
       <div className={styles.submitPage}>
         <div className={styles.container}>
           <div className={styles.header}>

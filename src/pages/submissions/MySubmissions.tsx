@@ -8,7 +8,7 @@ import { submissionAPI, authAPI, type ContentSubmission } from '../../services/a
 
 const MySubmissions: FunctionComponent = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
 
   const [submissions, setSubmissions] = useState<ContentSubmission[]>([]);
@@ -113,7 +113,7 @@ const MySubmissions: FunctionComponent = () => {
 
   return (
     <>
-      <Navbar />
+      {Navbar}
       <div className={styles.page}>
         <div className={styles.container}>
           <div className={styles.header}>

@@ -29,11 +29,19 @@ interface Audio {
 }
 
 const AudioPortal: FunctionComponent = () => {
-  const { Navbar } = useNavbar(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const Navbar = useNavbar({ 
+    showSearch: true,
+    onSearch: setSearchQuery,
+    searchPlaceholder: "Search audios...",
+    searchValue: searchQuery
+  });
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   const navigate = useNavigate();
   const [audios, setAudios] = useState<Audio[]>([]);
+  const [filteredAudios, setFilteredAudios] = useState<Audio[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -55,6 +63,37 @@ const AudioPortal: FunctionComponent = () => {
 
     fetchAudios();
   }, []);
+
+  // Initialize filtered audios when audios load
+  useEffect(() => {
+    setFilteredAudios(audios);
+  }, [audios]);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Filter audios based on debounced search query
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
+      setFilteredAudios(audios);
+    } else {
+      const query = debouncedSearchQuery.toLowerCase();
+      const filtered = audios.filter(audio =>
+        audio.title?.toLowerCase().includes(query) ||
+        audio.description?.toLowerCase().includes(query) ||
+        audio.user?.fullName?.toLowerCase().includes(query) ||
+        audio.user?.username?.toLowerCase().includes(query) ||
+        audio.category?.toLowerCase().includes(query)
+      );
+      setFilteredAudios(filtered);
+    }
+  }, [debouncedSearchQuery, audios]);
 
   const onAudioClick = useCallback((audioId: string) => {
     navigate(`/audios/${audioId}`);
@@ -78,7 +117,7 @@ const AudioPortal: FunctionComponent = () => {
 
   return (
     <>
-      <Navbar />
+      {Navbar}
       <div className={styles.aPortal}>
         <TabNavigation />
         <div className={styles.main}>
@@ -86,12 +125,19 @@ const AudioPortal: FunctionComponent = () => {
             <div className={styles.discoverSongsPodcasts}>Discover songs, podcasts, and spoken word performances from UIU talents. Ratings and plays contribute directly to the leaderboard.</div>
           </div>
           <div className={styles.section}>
+            {searchQuery && (
+              <h3 style={{ marginBottom: '20px', color: '#6b7280', paddingLeft: '20px' }}>
+                {filteredAudios.length} {filteredAudios.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+              </h3>
+            )}
             {loading ? (
               <p style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>Loading audios...</p>
-            ) : audios.length === 0 ? (
+            ) : searchQuery && filteredAudios.length === 0 ? (
+              <p style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>No audios found matching "{searchQuery}"</p>
+            ) : filteredAudios.length === 0 ? (
               <p style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>No audios available yet.</p>
             ) : (
-              audios.map((audio, index) => (
+              filteredAudios.map((audio, index) => (
                 <div 
                   key={audio._id} 
                   className={index === 0 ? styles.article : index === 1 ? styles.article2 : styles.article3}

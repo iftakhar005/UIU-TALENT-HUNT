@@ -9,10 +9,18 @@ import { contentAPI } from '../../services/api';
 
 const VPortal: FunctionComponent = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const Navbar = useNavbar({ 
+    showSearch: true, 
+    onSearch: setSearchQuery,
+    searchPlaceholder: "Search videos...",
+    searchValue: searchQuery
+  });
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   const [videos, setVideos] = useState<any[]>([]);
+  const [filteredVideos, setFilteredVideos] = useState<any[]>([]);
   const [trendingVideos, setTrendingVideos] = useState<any[]>([]);
   const [featuredVideo, setFeaturedVideo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -71,6 +79,38 @@ const VPortal: FunctionComponent = () => {
 
     fetchVideos();
   }, []);
+
+  // Initialize filtered videos when videos load
+  useEffect(() => {
+    setFilteredVideos(videos);
+  }, [videos]);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Filter videos based on debounced search query
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
+      setFilteredVideos(videos);
+    } else {
+      const query = debouncedSearchQuery.toLowerCase();
+      const filtered = videos.filter(video => 
+        video.title?.toLowerCase().includes(query) ||
+        video.description?.toLowerCase().includes(query) ||
+        video.user?.fullName?.toLowerCase().includes(query) ||
+        video.user?.username?.toLowerCase().includes(query) ||
+        video.category?.toLowerCase().includes(query) ||
+        video.tags?.some((tag: string) => tag.toLowerCase().includes(query))
+      );
+      setFilteredVideos(filtered);
+    }
+  }, [debouncedSearchQuery, videos]);
 
   const onVideoClick = useCallback((videoId: string) => {
     navigate(`/videos/${videoId}`);
@@ -297,7 +337,7 @@ const VPortal: FunctionComponent = () => {
 
   return (
     <>
-      <Navbar />
+      {Navbar}
       <TabNavigation />
       <div className={styles.vPortal}>
         <div className={styles.main}>
@@ -314,15 +354,19 @@ const VPortal: FunctionComponent = () => {
           {/* All Videos Section */}
           <div className={styles.allVideosSection}>
             <h2 className={styles.sectionTitle}>
-              <span className={styles.allVideosBadge}>All Videos</span>
+              <span className={styles.allVideosBadge}>
+                {searchQuery ? `Search Results (${filteredVideos.length})` : 'All Videos'}
+              </span>
             </h2>
             {loading ? (
               <div className={styles.loading}>Loading videos...</div>
-            ) : videos.length === 0 ? (
+            ) : searchQuery && filteredVideos.length === 0 ? (
+              <div className={styles.emptyState}>No videos found matching "{searchQuery}"</div>
+            ) : filteredVideos.length === 0 ? (
               <div className={styles.emptyState}>No videos available yet. Be the first to submit one!</div>
             ) : (
               <div className={styles.videoGrid}>
-                {videos.map((video) => renderVideoCard(video, false))}
+                {filteredVideos.map((video) => renderVideoCard(video, false))}
               </div>
             )}
           </div>

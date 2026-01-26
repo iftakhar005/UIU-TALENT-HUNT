@@ -19,7 +19,7 @@ interface UserData {
 
 export default function ProfileNewPage() {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
   
   const [user, setUser] = useState<UserData | null>(null);
