@@ -17,6 +17,8 @@ interface Audio {
     _id: string;
     username: string;
     fullName: string;
+    department?: string;
+    currentTrimester?: string;
   };
   category?: string;
   plays?: number;
@@ -106,6 +108,7 @@ const AudioPortal: FunctionComponent = () => {
                     <span className={styles.byArmanHossainContainer2}>
                       <span>{`by `}</span>
                       <b>{audio.user.fullName}</b>
+                      {audio.user?.department && <span> • {audio.user.department} • {audio.user.currentTrimester} Trimester</span>}
                       <span> • {audio.category || 'Music'}</span>
                     </span>
                   </div>
@@ -119,10 +122,16 @@ const AudioPortal: FunctionComponent = () => {
                       {audio.comments?.length || 0} comments
                     </div>
                   </div>
-                  <div className={index === 0 ? styles.paragraphbackground3 : styles.paragraphbackground6}>
-                    <div className={styles.div3}>{renderStars(audio.averageRating)}</div>
-                    <div className={index === 0 ? styles.rating : styles.rating2}>
-                      {audio.averageRating ? `${audio.averageRating.toFixed(1)} rating` : 'No ratings'}
+                  <div className={index === 0 ? styles.paragraphbackgroundUpvotes : styles.paragraphbackgroundUpvotes2}>
+                    <div className={styles.div3Upvotes}>👍</div>
+                    <div className={index === 0 ? styles.upvotes : styles.upvotes2}>
+                      {audio.upvotes || 0}
+                    </div>
+                  </div>
+                  <div className={index === 0 ? styles.paragraphbackgroundDownvotes : styles.paragraphbackgroundDownvotes2}>
+                    <div className={styles.div3Downvotes}>👎</div>
+                    <div className={index === 0 ? styles.downvotes : styles.downvotes2}>
+                      {audio.downvotes || 0}
                     </div>
                   </div>
                   <div className={index === 0 ? styles.background2 : styles.background4}>

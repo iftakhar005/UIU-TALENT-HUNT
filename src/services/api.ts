@@ -211,6 +211,7 @@ export const authAPI = {
     fullName: string;
     studentId?: string;
     department?: string;
+    currentTrimester?: string;
   }): Promise<{ success: boolean; message: string }> => {
     return request('/auth/send-verification', {
       method: 'POST',

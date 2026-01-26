@@ -1,53 +1,66 @@
 .submitPage {
+  width: 100%;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
-  padding: 80px 20px 40px;
+  background-color: #f8fafc;
+  overflow: hidden;
+  font-family: Inter, Poppins, sans-serif;
 }
 
 .container {
-  max-width: 700px;
-  margin: 0 auto;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  width: calc(100% - 160px);
+  margin: 200px auto 0;
+  padding: 40px 80px 130px;
+  min-height: calc(100vh - 200px);
+  color: #1e293b;
 }
 
 .header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 80px;
 }
 
 .title {
-  font-size: 2rem;
-  color: #fff;
-  margin-bottom: 8px;
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 45px;
+  letter-spacing: -1.19px;
+  color: #1e293b;
+  margin-bottom: 12px;
 }
 
 .subtitle {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 1rem;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 24px;
+  color: #64748b;
 }
 
 .errorBox {
-  background: rgba(220, 38, 38, 0.15);
-  color: #f87171;
+  background: #fee2e2;
+  color: #dc2626;
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 20px;
-  border: 1px solid rgba(220, 38, 38, 0.3);
+  border: 1px solid #fca5a5;
 }
 
 .formGroup {
-  margin-bottom: 24px;
+  margin-bottom: 80px;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .label {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: #1e293b;
+  margin-bottom: 12px;
   display: block;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: 8px;
 }
 
 .input,
@@ -55,10 +68,10 @@
 .textarea {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  color: #fff;
+  color: #1e293b;
   font-size: 1rem;
   transition: all 0.2s;
   box-sizing: border-box;
@@ -68,13 +81,14 @@
 .select:focus,
 .textarea:focus {
   outline: none;
-  border-color: #5d9bcc;
-  background: rgba(255, 255, 255, 0.1);
+  border-color: #3b82f6;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .input::placeholder,
 .textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: #94a3b8;
 }
 
 .select {
@@ -82,8 +96,8 @@
 }
 
 .select option {
-  background: #1a1a2e;
-  color: #fff;
+  background: #ffffff;
+  color: #1e293b;
 }
 
 .textarea {
@@ -93,17 +107,17 @@
 
 .uploadBox {
   position: relative;
-  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border: 2px dashed #cbd5e1;
   border-radius: 12px;
   padding: 30px;
   text-align: center;
   transition: all 0.3s;
-  background: rgba(255, 255, 255, 0.02);
+  background: #f8fafc;
 }
 
 .uploadBox:hover {
-  border-color: #5d9bcc;
-  background: rgba(93, 155, 204, 0.05);
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
 }
 
 .fileInput {
@@ -129,21 +143,21 @@
 }
 
 .uploadText {
-  color: rgba(255, 255, 255, 0.8);
+  color: #1e293b;
   font-size: 1rem;
 }
 
 .uploadHint {
-  color: rgba(255, 255, 255, 0.4);
+  color: #94a3b8;
   font-size: 0.85rem;
 }
 
 .fileInfo {
   margin-top: 12px;
   padding: 8px 16px;
-  background: rgba(93, 155, 204, 0.15);
+  background: #dbeafe;
   border-radius: 6px;
-  color: #5d9bcc;
+  color: #1e40af;
   font-size: 0.9rem;
 }
 
@@ -234,21 +248,25 @@
 }
 
 .submitButton {
-  flex: 1;
-  padding: 14px 24px;
-  background: linear-gradient(135deg, #5d9bcc, #4ecdc4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  height: 48px;
+  padding: 0;
+  background-color: #f97316;
   border: none;
   border-radius: 8px;
   color: #fff;
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 600;
+  letter-spacing: 0.24px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .submitButton:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(93, 155, 204, 0.4);
+  background-color: #ea580c;
 }
 
 .submitButton:disabled {
@@ -257,19 +275,25 @@
 }
 
 .cancelButton {
-  padding: 14px 24px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 160px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1rem;
+  color: #1a2b3a;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.24px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .cancelButton:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.4);
-  color: #fff;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 @media (max-width: 600px) {

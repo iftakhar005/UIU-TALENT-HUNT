@@ -140,13 +140,17 @@ const VPortal: FunctionComponent = () => {
           </p>
           <div style={{ display: 'flex', gap: '24px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+              <span style={{ fontSize: '18px' }}>👍</span>
+              <span style={{ fontWeight: '600' }}>{video.upvotes || 0}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+              <span style={{ fontSize: '18px' }}>👎</span>
+              <span style={{ fontWeight: '600' }}>{video.downvotes || 0}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
               <span style={{ fontSize: '20px' }}>👁</span>
               <span style={{ fontWeight: '600' }}>{video.views || 0}</span>
               <span style={{ opacity: 0.8 }}>views</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
-              <span style={{ color: '#fbbf24', fontSize: '18px' }}>{renderStars(video.averageRating)}</span>
-              <span style={{ fontWeight: '600' }}>{video.averageRating ? video.averageRating.toFixed(1) : 'New'}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
               <span style={{ fontSize: '18px' }}>💬</span>
@@ -169,6 +173,17 @@ const VPortal: FunctionComponent = () => {
               <span>🎬 by</span>
               <span style={{ color: '#fbbf24' }}>@{video.user?.username || 'Unknown'}</span>
             </div>
+            {video.user?.department && (
+              <div style={{
+                backgroundColor: 'rgba(255,255,255,0.15)',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '14px'
+              }}>
+                📚 {video.user.department} • {video.user.currentTrimester} Trimester
+              </div>
+            )}
             {video.category && (
               <div style={{
                 backgroundColor: 'rgba(255,255,255,0.15)',
@@ -248,9 +263,18 @@ const VPortal: FunctionComponent = () => {
         <p className={styles.videoDescription}>{video.description || ''}</p>
         <div className={styles.videoMeta}>
           <span>by <b>@{video.user?.username || 'Unknown'}</b></span>
+          {video.user?.department && <span> • {video.user.department} • {video.user.currentTrimester} Trimester</span>}
           {video.category && <span> • {video.category}</span>}
         </div>
         <div className={styles.videoStats}>
+          <div className={styles.stat}>
+            <span className={styles.statIcon}>👍</span>
+            <span>{video.upvotes || 0}</span>
+          </div>
+          <div className={styles.stat}>
+            <span className={styles.statIcon}>👎</span>
+            <span>{video.downvotes || 0}</span>
+          </div>
           <div className={styles.stat}>
             <span className={styles.statIcon}>👁</span>
             <span>{video.views || 0} views</span>
@@ -258,10 +282,6 @@ const VPortal: FunctionComponent = () => {
           <div className={styles.stat}>
             <span className={styles.statIcon}>💬</span>
             <span>{video.comments?.length || 0} comments</span>
-          </div>
-          <div className={styles.stat}>
-            <span className={styles.statIcon} style={{ color: '#fbbf24', fontSize: '16px' }}>{renderStars(video.averageRating)}</span>
-            <span>{renderStars(video.averageRating)}</span>
           </div>
         </div>
         {video.tags && video.tags.length > 0 && (
