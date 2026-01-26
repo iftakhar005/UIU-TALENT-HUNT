@@ -142,10 +142,37 @@ const ReadBlog = () => {
     return formatDate(dateString);
   };
 
-  const handlePostComment = () => {
-    if (newComment.trim()) {
-      console.log('Posting comment:', newComment);
-      setNewComment('');
+  const handlePostComment = async () => {
+    if (!newComment.trim()) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to comment');
+        return;
+      }
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/blogs/${id}/comment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: newComment })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setBlog(data.data);
+        setNewComment('');
+      } else {
+        alert(data.error || 'Failed to post comment');
+      }
+    } catch (err) {
+      console.error('Error posting comment:', err);
+      alert('Failed to post comment. Please try again.');
     }
   };
 

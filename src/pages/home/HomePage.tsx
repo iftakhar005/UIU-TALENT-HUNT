@@ -30,7 +30,6 @@ export default function HomePage() {
   const [trendingAudios, setTrendingAudios] = useState<TrendingItem[]>([]);
   const [trendingBlogs, setTrendingBlogs] = useState<TrendingItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'videos' | 'audios' | 'blogs'>('videos');
 
   useEffect(() => {
     const fetchTrendingContent = async () => {
@@ -117,32 +116,9 @@ export default function HomePage() {
       {/* Main Content */}
       <div className={styles.main}>
         <div className={styles.backgroundshadow}>
-          {/* Tab Navigation */}
-          <div className={styles.homeTabContainer}>
-            <button
-              className={`${styles.homeTab} ${activeTab === 'videos' ? styles.activeVideoTab : ''}`}
-              onClick={() => setActiveTab('videos')}
-            >
-              <span className={styles.tabIcon}>🎬</span> Videos
-            </button>
-            <button
-              className={`${styles.homeTab} ${activeTab === 'audios' ? styles.activeAudioTab : ''}`}
-              onClick={() => setActiveTab('audios')}
-            >
-              <span className={styles.tabIcon}>🎵</span> Audios
-            </button>
-            <button
-              className={`${styles.homeTab} ${activeTab === 'blogs' ? styles.activeBlogTab : ''}`}
-              onClick={() => setActiveTab('blogs')}
-            >
-              <span className={styles.tabIcon}>📝</span> Blogs
-            </button>
-          </div>
-
-          <div className={styles.tabContent}>
-            {/* Trending Videos Section */}
-            {activeTab === 'videos' && (
-              <>
+          {/* Trending Videos Section */}
+          <div style={{ marginBottom: '60px' }}>
+            <>
                 <h2 className={styles.heading2}>
                   <span className={styles.trendingVideos}>Trending Videos</span>
                   <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#6b7280', marginLeft: '12px' }}>
@@ -207,11 +183,11 @@ export default function HomePage() {
                   <p style={{ textAlign: 'center', padding: '20px', color: '#6b7280' }}>No videos available yet.</p>
                 )}
               </>
-            )}
+          </div>
 
-            {/* Trending Audios Section */}
-            {activeTab === 'audios' && (
-              <>
+          {/* Trending Audios Section */}
+          <div style={{ marginBottom: '60px' }}>
+            <>
                 <h2 className={styles.heading22}>
                   <span className={styles.trendingAudios}>Trending Audios</span>
                   <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#6b7280', marginLeft: '12px' }}>
@@ -283,11 +259,11 @@ export default function HomePage() {
                   <p style={{ textAlign: 'center', padding: '20px', color: '#6b7280' }}>No audios available yet.</p>
                 )}
               </>
-            )}
+          </div>
 
-            {/* Trending Blogs Section */}
-            {activeTab === 'blogs' && (
-              <>
+          {/* Trending Blogs Section */}
+          <div>
+            <>
                 <h2 className={styles.heading23}>
                   <span className={styles.trendingBlogs}>Trending Blogs</span>
                   <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#6b7280', marginLeft: '12px' }}>
@@ -358,8 +334,8 @@ export default function HomePage() {
                   <p style={{ textAlign: 'center', padding: '20px', color: '#6b7280' }}>No blogs available yet.</p>
                 )}
               </>
-            )}
           </div>
+
         </div>
       </div>
       <Footer />
