@@ -11,8 +11,8 @@ const VPortal: FunctionComponent = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const Navbar = useNavbar({ 
-    showSearch: true, 
+  const Navbar = useNavbar({
+    showSearch: true,
     onSearch: setSearchQuery,
     searchPlaceholder: "Search videos...",
     searchValue: searchQuery
@@ -100,7 +100,7 @@ const VPortal: FunctionComponent = () => {
       setFilteredVideos(videos);
     } else {
       const query = debouncedSearchQuery.toLowerCase();
-      const filtered = videos.filter(video => 
+      const filtered = videos.filter(video =>
         video.title?.toLowerCase().includes(query) ||
         video.description?.toLowerCase().includes(query) ||
         video.user?.fullName?.toLowerCase().includes(query) ||

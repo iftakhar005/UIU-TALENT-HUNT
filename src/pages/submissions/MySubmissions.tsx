@@ -37,7 +37,7 @@ const MySubmissions: FunctionComponent = () => {
   const fetchSubmissions = useCallback(async () => {
     setLoading(true);
     setError('');
-    
+
     try {
       const result = await submissionAPI.getMySubmissions({
         status: filter.status || undefined,
@@ -45,7 +45,7 @@ const MySubmissions: FunctionComponent = () => {
         page: pagination.currentPage,
         limit: 10,
       });
-      
+
       setSubmissions(result.submissions);
       setPagination({
         currentPage: result.pagination.page,
@@ -65,7 +65,7 @@ const MySubmissions: FunctionComponent = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this submission?')) return;
-    
+
     try {
       await submissionAPI.deleteSubmission(id);
       setSubmissions(submissions.filter(s => s._id !== id));
@@ -204,9 +204,9 @@ const MySubmissions: FunctionComponent = () => {
 
                     <div className={styles.cardActions}>
                       {submission.mediaUrl && (
-                        <a 
-                          href={submission.mediaUrl} 
-                          target="_blank" 
+                        <a
+                          href={submission.mediaUrl}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className={styles.viewButton}
                         >

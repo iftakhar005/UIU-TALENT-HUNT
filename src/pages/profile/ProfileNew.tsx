@@ -21,14 +21,14 @@ export default function ProfileNewPage() {
   const navigate = useNavigate();
   const Navbar = useNavbar();
   const { Footer } = useFooter();
-  
+
   const [user, setUser] = useState<UserData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     fullName: '',
@@ -52,17 +52,17 @@ export default function ProfileNewPage() {
                 Authorization: `Bearer ${token}`,
               },
             });
-            
+
             if (response.ok) {
               const data = await response.json();
               const freshUser = data.user;
               console.log('👤 Fresh user data from backend:', freshUser);
               console.log('📚 Department:', freshUser.department);
               console.log('📆 Trimester:', freshUser.currentTrimester);
-              
+
               // Update localStorage with fresh data
               localStorage.setItem('user', JSON.stringify(freshUser));
-              
+
               setUser(freshUser);
               setFormData({
                 fullName: freshUser.fullName || '',
@@ -163,16 +163,16 @@ export default function ProfileNewPage() {
             ctx.drawImage(img, 0, 0, width, height);
             // Use lower quality (60%) for smaller file size
             const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-            
+
             // Check compressed size
             const sizeInKB = (compressedBase64.length * 0.75) / 1024;
             console.log('🖼️ Compressed avatar size:', sizeInKB.toFixed(2), 'KB');
-            
+
             if (sizeInKB > 500) {
               setError('Compressed image still too large. Please use a smaller image.');
               return;
             }
-            
+
             setAvatarFile(file);
             setAvatarPreview(compressedBase64);
           }
@@ -287,7 +287,7 @@ export default function ProfileNewPage() {
           try {
             const avatarBase64 = reader.result as string;
             console.log('🖼️ Avatar size:', (avatarBase64.length * 0.75) / 1024, 'KB');
-            
+
             // Update with avatar
             const avatarUpdateData: any = {
               fullName: formData.fullName,
@@ -353,7 +353,7 @@ export default function ProfileNewPage() {
   if (loading) {
     return (
       <>
-        <Navbar />
+        {Navbar}
         <div style={{ textAlign: 'center', padding: '100px 20px', minHeight: '100vh' }}>
           <p style={{ fontSize: '18px', color: '#64748b' }}>Loading profile...</p>
         </div>
@@ -365,7 +365,7 @@ export default function ProfileNewPage() {
   if (!user) {
     return (
       <>
-        <Navbar />
+        {Navbar}
         <div style={{ textAlign: 'center', padding: '100px 20px', minHeight: '100vh' }}>
           <p style={{ fontSize: '18px', color: '#e11d48' }}>User data not found</p>
         </div>
@@ -376,8 +376,8 @@ export default function ProfileNewPage() {
 
   return (
     <>
-      <Navbar />
-      
+      {Navbar}
+
       <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', paddingTop: '80px', paddingBottom: '80px' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 24px' }}>
           {/* Header */}

@@ -39,7 +39,7 @@ const VideoSubmit: FunctionComponent = () => {
 
   const onSubmitClick = useCallback(async () => {
     setError('');
-    
+
     // Validate form
     if (!title.trim()) {
       setError('Please provide a title for your video.');
@@ -220,8 +220,8 @@ const VideoSubmit: FunctionComponent = () => {
           {isSubmitting && (
             <div className={styles.progressContainer}>
               <div className={styles.progressBar}>
-                <div 
-                  className={styles.progressFill} 
+                <div
+                  className={styles.progressFill}
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
@@ -230,14 +230,14 @@ const VideoSubmit: FunctionComponent = () => {
           )}
 
           <div className={styles.buttonGroup}>
-            <button 
+            <button
               className={styles.submitButton}
               onClick={onSubmitClick}
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Uploading...' : 'Submit Video'}
             </button>
-            <button 
+            <button
               className={styles.cancelButton}
               onClick={() => navigate('/submit')}
               disabled={isSubmitting}

@@ -12,8 +12,8 @@ interface NavbarOptions {
 
 export default function useNavbar(options: NavbarOptions | boolean = false) {
   // Handle backward compatibility - if boolean is passed, convert to options object
-  const config: NavbarOptions = typeof options === 'boolean' 
-    ? { showSearch: options } 
+  const config: NavbarOptions = typeof options === 'boolean'
+    ? { showSearch: options }
     : options;
 
   const { showSearch = false, onSearch, searchPlaceholder = "Search entries...", searchValue = "" } = config;
@@ -30,7 +30,7 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
   useEffect(() => {
     const loggedInStatus = localStorage.getItem('isLoggedIn') === 'true';
     setIsLoggedIn(loggedInStatus);
-    
+
     if (loggedInStatus) {
       const userData = localStorage.getItem('user');
       if (userData) {
@@ -130,7 +130,7 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
   const handleNotificationItemClick = useCallback(async (notif: any) => {
     // Delete notification when clicked
     await deleteNotification(notif._id);
-    
+
     // Navigate to content if applicable
     if (notif.contentId && notif.contentType) {
       setShowNotifications(false);
@@ -138,7 +138,7 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
     }
   }, [deleteNotification, navigate]);
 
-  const Navbar = useMemo(() => () => (
+  const Navbar = useMemo(() => (
     <div className={styles.header2}>
       <div className={styles.nav}>
         <div className={styles.uiuTalentHunt} onClick={onLogoClick} style={{ cursor: 'pointer' }}>
@@ -160,11 +160,11 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
             <span className={`material-icons ${styles.search}`}>search</span>
           </div>
         )}
-          
-          {/* Spacer to push items to the right when search is hidden */}
-          {!showSearch && <div style={{ flex: 1 }} />}
-          
-          <button className={styles.leaderboardBtn} onClick={() => navigate('/leaderboard')}>
+
+        {/* Spacer to push items to the right when search is hidden */}
+        {!showSearch && <div style={{ flex: 1 }} />}
+
+        <button className={styles.leaderboardBtn} onClick={() => navigate('/leaderboard')}>
           <span className="material-icons">leaderboard</span>
           Leaderboard
         </button>
@@ -173,7 +173,7 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
             <div className={styles.submitEntry}>Submit Entry</div>
           </button>
         )}
-        
+
         {!isLoggedIn ? (
           <>
             <button className={styles.button2}>
@@ -248,7 +248,7 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
                   <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
                     <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Notifications</h3>
                   </div>
-                  
+
                   {notifications.length === 0 ? (
                     <div style={{ padding: '32px', textAlign: 'center', color: '#6b7280' }}>
                       <p style={{ margin: 0 }}>No notifications yet</p>
@@ -291,8 +291,8 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 style={{
-                  background: user?.avatar 
-                    ? `url(${user.avatar}) center/cover` 
+                  background: user?.avatar
+                    ? `url(${user.avatar}) center/cover`
                     : `linear-gradient(135deg, ${getAvatarColor(user?.username || 'user')} 0%, ${getAvatarColor(user?.username || 'user')}99 100%)`,
                   border: '2px solid white',
                   width: '40px',

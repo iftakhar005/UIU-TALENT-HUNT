@@ -31,7 +31,7 @@ interface Audio {
 const AudioPortal: FunctionComponent = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const Navbar = useNavbar({ 
+  const Navbar = useNavbar({
     showSearch: true,
     onSearch: setSearchQuery,
     searchPlaceholder: "Search audios...",
@@ -51,7 +51,7 @@ const AudioPortal: FunctionComponent = () => {
         const response = await fetch(`${apiUrl}/audios?limit=20&page=1`);
 
         if (!response.ok) throw new Error('Failed to fetch audios');
-        
+
         const data = await response.json();
         setAudios(data.data || []);
       } catch (err) {
@@ -118,18 +118,18 @@ const AudioPortal: FunctionComponent = () => {
   return (
     <>
       {Navbar}
+      <TabNavigation />
       <div className={styles.aPortal}>
-        <TabNavigation />
         <div className={styles.main}>
           <div className={styles.header}>
             <div className={styles.discoverSongsPodcasts}>Discover songs, podcasts, and spoken word performances from UIU talents. Ratings and plays contribute directly to the leaderboard.</div>
           </div>
+          {searchQuery && (
+            <h3 style={{ marginBottom: '20px', color: '#6b7280', paddingLeft: '40px' }}>
+              {filteredAudios.length} {filteredAudios.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+            </h3>
+          )}
           <div className={styles.section}>
-            {searchQuery && (
-              <h3 style={{ marginBottom: '20px', color: '#6b7280', paddingLeft: '20px' }}>
-                {filteredAudios.length} {filteredAudios.length === 1 ? 'result' : 'results'} for "{searchQuery}"
-              </h3>
-            )}
             {loading ? (
               <p style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>Loading audios...</p>
             ) : searchQuery && filteredAudios.length === 0 ? (
@@ -138,8 +138,8 @@ const AudioPortal: FunctionComponent = () => {
               <p style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>No audios available yet.</p>
             ) : (
               filteredAudios.map((audio, index) => (
-                <div 
-                  key={audio._id} 
+                <div
+                  key={audio._id}
                   className={index === 0 ? styles.article : index === 1 ? styles.article2 : styles.article3}
                   onClick={() => onAudioClick(audio._id)}
                   style={{ cursor: 'pointer' }}

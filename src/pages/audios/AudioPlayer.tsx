@@ -81,13 +81,13 @@ const AudioPlayer = () => {
           });
           const data = await response.json();
           console.log('✅ Play counted for audio:', id, data);
-          
+
           // Update the local state to reflect the new play count
           setAudioData(prev => prev ? {
             ...prev,
             plays: (prev.plays || 0) + 1
           } : null);
-          
+
           setPlayCounted(true);
           playCountTimeoutRef.current = null;
         } catch (error) {
@@ -270,7 +270,7 @@ const AudioPlayer = () => {
   if (!audioData) {
     return (
       <div className={styles.aPlayer}>
-        <Navbar />
+        {Navbar}
         <TabNavigation />
         <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>Audio not found</div>
         <Footer />

@@ -36,14 +36,14 @@ const SubmitEntry = () => {
   return (
     <div className={styles.submitEntry}>
       {Navbar}
-      
+
       <div className={styles.mainContent}>
         <div className={styles.container}>
           <h1 className={styles.heading}>Submit Your Talent</h1>
           <p className={styles.subheading}>Choose the type of content you want to submit</p>
 
           <div className={styles.selectionBox}>
-            <div 
+            <div
               className={styles.selectButton}
               onClick={() => setIsOpen(!isOpen)}
             >
@@ -69,7 +69,7 @@ const SubmitEntry = () => {
             )}
           </div>
 
-          <button 
+          <button
             className={styles.nextButton}
             onClick={handleNext}
           >

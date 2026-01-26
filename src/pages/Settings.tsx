@@ -114,8 +114,8 @@ const Settings: FunctionComponent = () => {
   if (loading) {
     return (
       <>
-        {Navbar}
-        <div className={styles.page}>
+        <div className={styles.settingsPage}>
+          {Navbar}
           <div className={styles.container}>Loading...</div>
         </div>
         <Footer />
@@ -143,7 +143,7 @@ const Settings: FunctionComponent = () => {
             {/* Profile Section */}
             <section className={styles.section}>
               <h2 className={styles.sectionTitle}>👤 Profile Information</h2>
-              
+
               <div className={styles.formGroup}>
                 <label className={styles.label}>Full Name</label>
                 <input

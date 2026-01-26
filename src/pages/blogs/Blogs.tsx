@@ -27,7 +27,7 @@ const Blogs = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const Navbar = useNavbar({ 
+  const Navbar = useNavbar({
     showSearch: true,
     onSearch: setSearchQuery,
     searchPlaceholder: "Search blogs...",
@@ -141,9 +141,9 @@ const Blogs = () => {
         {article.coverImageUrl ? (
           <img src={article.coverImageUrl} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <div style={{ 
-            width: '100%', 
-            height: '100%', 
+          <div style={{
+            width: '100%',
+            height: '100%',
             backgroundColor: '#e5edf8',
             display: 'flex',
             alignItems: 'center',
@@ -183,7 +183,7 @@ const Blogs = () => {
     <div className={styles.blogs}>
       {Navbar}
       <TabNavigation />
-      
+
       <div className={styles.headerSection}>
         <h1 className={styles.pageTitle}>Blog Portal</h1>
         <p className={styles.pageDescription}>
