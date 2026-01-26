@@ -41,20 +41,76 @@ export default function ProfileNewPage() {
 
   // Load user data on mount
   useEffect(() => {
-    const loadUserData = () => {
+    const loadUserData = async () => {
       try {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-          const parsedUser = JSON.parse(userData);
-          setUser(parsedUser);
-          setFormData({
-            fullName: parsedUser.fullName || '',
-            bio: parsedUser.bio || '',
-            studentId: parsedUser.studentId || '',
-            department: parsedUser.department || '',
-          });
-          if (parsedUser.avatar) {
-            setAvatarPreview(parsedUser.avatar);
+        const token = localStorage.getItem('token');
+        if (token) {
+          // Fetch fresh user data from backend
+          try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/me`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              const freshUser = data.user;
+              console.log('👤 Fresh user data from backend:', freshUser);
+              console.log('📚 Department:', freshUser.department);
+              console.log('📆 Trimester:', freshUser.currentTrimester);
+              
+              // Update localStorage with fresh data
+              localStorage.setItem('user', JSON.stringify(freshUser));
+              
+              setUser(freshUser);
+              setFormData({
+                fullName: freshUser.fullName || '',
+                bio: freshUser.bio || '',
+                studentId: freshUser.studentId || '',
+                department: freshUser.department || '',
+              });
+              if (freshUser.avatar) {
+                setAvatarPreview(freshUser.avatar);
+              }
+            } else {
+              // Fallback to localStorage if API fails
+              const userData = localStorage.getItem('user');
+              if (userData) {
+                const parsedUser = JSON.parse(userData);
+                setUser(parsedUser);
+                setFormData({
+                  fullName: parsedUser.fullName || '',
+                  bio: parsedUser.bio || '',
+                  studentId: parsedUser.studentId || '',
+                  department: parsedUser.department || '',
+                });
+                if (parsedUser.avatar) {
+                  setAvatarPreview(parsedUser.avatar);
+                }
+              } else {
+                navigate('/login');
+              }
+            }
+          } catch (apiError) {
+            console.error('Failed to fetch user data from API:', apiError);
+            // Fallback to localStorage
+            const userData = localStorage.getItem('user');
+            if (userData) {
+              const parsedUser = JSON.parse(userData);
+              setUser(parsedUser);
+              setFormData({
+                fullName: parsedUser.fullName || '',
+                bio: parsedUser.bio || '',
+                studentId: parsedUser.studentId || '',
+                department: parsedUser.department || '',
+              });
+              if (parsedUser.avatar) {
+                setAvatarPreview(parsedUser.avatar);
+              }
+            } else {
+              navigate('/login');
+            }
           }
         } else {
           navigate('/login');
@@ -538,20 +594,24 @@ export default function ProfileNewPage() {
                       boxSizing: 'border-box',
                       fontFamily: 'inherit',
                       backgroundColor: 'white',
+                      color: '#1e293b',
                       cursor: 'pointer',
-                      transition: 'border-color 0.2s'
+                      transition: 'border-color 0.2s',
+                      appearance: 'auto',
+                      WebkitAppearance: 'menulist',
+                      MozAppearance: 'menulist'
                     }}
                     onFocus={(e) => e.currentTarget.style.borderColor = '#ff8a3c'}
                     onBlur={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
                   >
-                    <option value="">Select Department</option>
-                    <option value="CSE">CSE</option>
-                    <option value="EE">EE</option>
-                    <option value="Pharmacy">Pharmacy</option>
-                    <option value="Civil">Civil</option>
-                    <option value="BBA">BBA</option>
-                    <option value="Nursing">Nursing</option>
-                    <option value="Architecture">Architecture</option>
+                    <option value="" style={{ color: '#94a3b8' }}>Select Department</option>
+                    <option value="CSE" style={{ color: '#1e293b' }}>CSE</option>
+                    <option value="EE" style={{ color: '#1e293b' }}>EE</option>
+                    <option value="Pharmacy" style={{ color: '#1e293b' }}>Pharmacy</option>
+                    <option value="Civil" style={{ color: '#1e293b' }}>Civil</option>
+                    <option value="BBA" style={{ color: '#1e293b' }}>BBA</option>
+                    <option value="Nursing" style={{ color: '#1e293b' }}>Nursing</option>
+                    <option value="Architecture" style={{ color: '#1e293b' }}>Architecture</option>
                   </select>
                 </div>
 
@@ -679,10 +739,26 @@ export default function ProfileNewPage() {
               </div>
 
               {/* Role */}
-              <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '16px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
                 <label style={{ fontSize: '14px', fontWeight: '600', color: '#475569' }}>Account Type</label>
                 <p style={{ fontSize: '14px', color: '#1e293b', margin: 0, textTransform: 'capitalize' }}>
                   {user.role}
+                </p>
+              </div>
+
+              {/* Department */}
+              <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '16px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: '#475569' }}>Department</label>
+                <p style={{ fontSize: '14px', color: '#1e293b', margin: 0 }}>
+                  {user.department || 'Not set'}
+                </p>
+              </div>
+
+              {/* Trimester */}
+              <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '16px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: '#475569' }}>Current Trimester</label>
+                <p style={{ fontSize: '14px', color: '#1e293b', margin: 0 }}>
+                  {user.currentTrimester ? `${user.currentTrimester} Trimester` : 'Not set'}
                 </p>
               </div>
             </div>

@@ -483,8 +483,42 @@ const VPlayer = () => {
                         const video = e.currentTarget;
                         setCurrentTime(video.currentTime);
                       }}
-                      onPlay={() => {
+                      onPlay={async () => {
                         setIsPlaying(true);
+                        // Increment view count only once when video starts playing for the first time
+                        if (!viewCountedRef.current && id && videoData) {
+                          try {
+                            const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
+                            const endpoint = `${apiUrl}/videos/${id}/view`;
+                            console.log('📤 Incrementing view at endpoint:', endpoint);
+
+                            const response = await fetch(endpoint, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' }
+                            });
+
+                            if (!response.ok) {
+                              const errorData = await response.json().catch(() => ({}));
+                              console.error('❌ View increment failed with status', response.status, ':', errorData);
+                              throw new Error(`Failed to increment view: ${response.status}`);
+                            }
+
+                            const data = await response.json();
+                            console.log('✅ View counted for video:', id, 'New view count:', data.views);
+                            viewCountedRef.current = true;
+
+                            // Update local state to reflect new view count immediately in UI
+                            setVideoData(prev => {
+                              if (!prev) return prev;
+                              return {
+                                ...prev,
+                                views: `${data.views?.toLocaleString() || (parseInt(prev.views.replace(/,/g, '')) + 1).toLocaleString()}`
+                              };
+                            });
+                          } catch (error) {
+                            console.error('❌ Error incrementing view:', error);
+                          }
+                        }
                       }}
                       onPause={() => setIsPlaying(false)}
                     />
