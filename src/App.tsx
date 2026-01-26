@@ -14,6 +14,7 @@ import VideoSubmit from './pages/submit/VideoSubmit';
 import BlogSubmit from './pages/submit/BlogSubmit';
 import MySubmissions from './pages/submissions/MySubmissions';
 import ProfilePage from './pages/profile/Profile';
+import Settings from './pages/Settings';
 import Admin from './pages/Admin';
 import Leaderboard from './pages/leaderboard/Leaderboard';
 import './App.css';
@@ -26,6 +27,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/videos" element={<VPortal />} />
         <Route path="/videos/:id" element={<VPlayer />} />
