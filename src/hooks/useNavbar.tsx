@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import styles from '../styles/HomePage.module.css';
 import { useNavigate } from 'react-router-dom';
+import { useNotifications } from './useNotifications';
 
 interface NavbarOptions {
   showSearch?: boolean;
@@ -20,8 +21,11 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const { unreadCount, notifications, fetchNotifications, markAsRead } = useNotifications();
 
   useEffect(() => {
     const loggedInStatus = localStorage.getItem('isLoggedIn') === 'true';
@@ -43,15 +47,18 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowProfileMenu(false);
       }
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
     };
 
-    if (showProfileMenu) {
+    if (showProfileMenu || showNotifications) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [showProfileMenu]);
+  }, [showProfileMenu, showNotifications]);
 
   const onLoginTextClick = useCallback(() => {
     navigate('/login');
@@ -113,6 +120,26 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
     return colors[Math.abs(hash) % colors.length];
   };
 
+  const handleNotificationClick = useCallback(() => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications && notifications.length === 0) {
+      fetchNotifications();
+    }
+  }, [showNotifications, notifications.length, fetchNotifications]);
+
+  const handleNotificationItemClick = useCallback((notif: any) => {
+    // Mark as read
+    if (!notif.isRead) {
+      markAsRead([notif._id]);
+    }
+    
+    // Navigate to content if applicable
+    if (notif.contentId && notif.contentType) {
+      setShowNotifications(false);
+      navigate(`/${notif.contentType}s/${notif.contentId}`);
+    }
+  }, [markAsRead, navigate]);
+
   const Navbar = useMemo(() => (
     <div className={styles.header2}>
       <div className={styles.nav}>
@@ -165,40 +192,117 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Notification Button */}
-            <button
-              style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative'
-              }}
-              title="Notifications"
-            >
-              🔔
-              <span
+            <div style={{ position: 'relative' }} ref={notificationRef}>
+              <button
+                onClick={handleNotificationClick}
                 style={{
-                  position: 'absolute',
-                  top: '-4px',
-                  right: '-4px',
-                  backgroundColor: '#ef4444',
-                  color: 'white',
-                  borderRadius: '50%',
-                  width: '20px',
-                  height: '20px',
-                  fontSize: '12px',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontWeight: 'bold'
+                  position: 'relative'
                 }}
+                title="Notifications"
               >
-                3
-              </span>
-            </button>
+                🔔
+                {unreadCount > 0 && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '-4px',
+                      right: '-4px',
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      borderRadius: '50%',
+                      width: '20px',
+                      height: '20px',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Dropdown */}
+              {showNotifications && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '45px',
+                    right: '0',
+                    backgroundColor: 'white',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                    width: '380px',
+                    maxHeight: '500px',
+                    overflow: 'auto',
+                    zIndex: 1000
+                  }}
+                >
+                  <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Notifications</h3>
+                  </div>
+                  
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: '32px', textAlign: 'center', color: '#6b7280' }}>
+                      <p style={{ margin: 0 }}>No notifications yet</p>
+                    </div>
+                  ) : (
+                    <div>
+                      {notifications.map((notif: any) => (
+                        <div
+                          key={notif._id}
+                          onClick={() => handleNotificationItemClick(notif)}
+                          style={{
+                            padding: '12px 16px',
+                            borderBottom: '1px solid #f3f4f6',
+                            cursor: 'pointer',
+                            backgroundColor: notif.isRead ? 'transparent' : '#f0f9ff',
+                            transition: 'background-color 0.2s',
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = notif.isRead ? 'transparent' : '#f0f9ff'}
+                        >
+                          <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>
+                            {notif.title}
+                          </div>
+                          <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>
+                            {notif.message}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#9ca3af' }}>
+                            {new Date(notif.createdAt).toLocaleString()}
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {unreadCount > 0 && (
+                        <div
+                          onClick={() => markAsRead()}
+                          style={{
+                            padding: '12px',
+                            textAlign: 'center',
+                            color: '#3b82f6',
+                            cursor: 'pointer',
+                            fontWeight: '500',
+                            fontSize: '14px'
+                          }}
+                        >
+                          Mark all as read
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Profile Dropdown */}
             <div style={{ position: 'relative' }} ref={menuRef}>
@@ -356,7 +460,7 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
         )}
       </div>
     </div>
-  ), [searchValue, showSearch, searchPlaceholder, isLoggedIn, user, showProfileMenu, onSearch, onLogoClick, navigate, onSubmitEntryClick, onLoginTextClick, onSignUpClick, onProfileClick, onLogout, getInitials, getAvatarColor]);
+  ), [searchValue, showSearch, searchPlaceholder, isLoggedIn, user, showProfileMenu, showNotifications, unreadCount, notifications, onSearch, onLogoClick, navigate, onSubmitEntryClick, onLoginTextClick, onSignUpClick, onProfileClick, onLogout, getInitials, getAvatarColor, handleNotificationClick, handleNotificationItemClick, markAsRead]);
 
   return Navbar;
 }
