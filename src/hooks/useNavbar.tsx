@@ -25,7 +25,7 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
   const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
-  const { unreadCount, notifications, fetchNotifications, markAsRead } = useNotifications();
+  const { unreadCount, notifications, fetchNotifications, markAsRead, deleteNotification } = useNotifications();
 
   useEffect(() => {
     const loggedInStatus = localStorage.getItem('isLoggedIn') === 'true';
@@ -136,9 +136,9 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
       setShowNotifications(false);
       navigate(`/${notif.contentType}s/${notif.contentId}`);
     }
-  }, [markAsRead, navigate]);
+  }, [deleteNotification, navigate]);
 
-  const Navbar = useMemo(() => (
+  const Navbar = useMemo(() => () => (
     <div className={styles.header2}>
       <div className={styles.nav}>
         <div className={styles.uiuTalentHunt} onClick={onLogoClick} style={{ cursor: 'pointer' }}>
@@ -390,28 +390,6 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
                     📤 My Submissions
                   </button>
 
-                  <button
-                    onClick={() => {
-                      navigate('/settings');
-                      setShowProfileMenu(false);
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: 'none',
-                      background: 'none',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      color: '#1e293b',
-                      fontSize: '14px',
-                      transition: 'background-color 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                  >
-                    ⚙️ Settings
-                  </button>
-
                   {/* Divider */}
                   <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '8px 0' }} />
 
@@ -442,7 +420,7 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
         )}
       </div>
     </div>
-  ), [searchValue, showSearch, searchPlaceholder, isLoggedIn, user, showProfileMenu, showNotifications, unreadCount, notifications, onSearch, onLogoClick, navigate, onSubmitEntryClick, onLoginTextClick, onSignUpClick, onProfileClick, onLogout, getInitials, getAvatarColor, handleNotificationClick, handleNotificationItemClick, markAsRead]);
+  ), [searchValue, showSearch, searchPlaceholder, isLoggedIn, user, showProfileMenu, showNotifications, unreadCount, notifications, onSearch, onLogoClick, navigate, onSubmitEntryClick, onLoginTextClick, onSignUpClick, onProfileClick, onLogout, getInitials, getAvatarColor, handleNotificationClick, handleNotificationItemClick]);
 
   return Navbar;
 }
