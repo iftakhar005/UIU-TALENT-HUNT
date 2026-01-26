@@ -127,11 +127,9 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
     }
   }, [showNotifications, notifications.length, fetchNotifications]);
 
-  const handleNotificationItemClick = useCallback((notif: any) => {
-    // Mark as read
-    if (!notif.isRead) {
-      markAsRead([notif._id]);
-    }
+  const handleNotificationItemClick = useCallback(async (notif: any) => {
+    // Delete notification when clicked
+    await deleteNotification(notif._id);
     
     // Navigate to content if applicable
     if (notif.contentId && notif.contentType) {
@@ -257,7 +255,7 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
                     </div>
                   ) : (
                     <div>
-                      {notifications.map((notif: any) => (
+                      {notifications.slice(0, 2).map((notif: any) => (
                         <div
                           key={notif._id}
                           onClick={() => handleNotificationItemClick(notif)}
@@ -282,22 +280,6 @@ export default function useNavbar(options: NavbarOptions | boolean = false) {
                           </div>
                         </div>
                       ))}
-                      
-                      {unreadCount > 0 && (
-                        <div
-                          onClick={() => markAsRead()}
-                          style={{
-                            padding: '12px',
-                            textAlign: 'center',
-                            color: '#3b82f6',
-                            cursor: 'pointer',
-                            fontWeight: '500',
-                            fontSize: '14px'
-                          }}
-                        >
-                          Mark all as read
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>

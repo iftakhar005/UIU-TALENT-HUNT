@@ -68,7 +68,7 @@ export const useNotifications = () => {
 
     try {
       setLoading(true);
-      const url = `${API_URL}/notifications?limit=20${unreadOnly ? '&unreadOnly=true' : ''}`;
+      const url = `${API_URL}/notifications?limit=2${unreadOnly ? '&unreadOnly=true' : ''}`;
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +78,13 @@ export const useNotifications = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setNotifications(data.notifications || []);
+        // Filter out notifications older than 30 days
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const recentNotifications = (data.notifications || []).filter((notif: Notification) => 
+          new Date(notif.createdAt) > thirtyDaysAgo
+        );
+        setNotifications(recentNotifications);
         setUnreadCount(data.unreadCount || 0);
       }
     } catch (error) {
