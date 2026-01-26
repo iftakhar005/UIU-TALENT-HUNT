@@ -48,7 +48,7 @@ interface AudioData {
 const AudioPlayer = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { Navbar } = useNavbar();
+  const { Navbar } = useNavbar(true);
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
 

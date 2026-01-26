@@ -25,7 +25,7 @@ interface Blog {
 
 const Blogs = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const { Navbar } = useNavbar(true);
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   const [blogs, setBlogs] = useState<Blog[]>([]);

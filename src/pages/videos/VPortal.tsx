@@ -9,7 +9,7 @@ import { contentAPI } from '../../services/api';
 
 const VPortal: FunctionComponent = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const { Navbar } = useNavbar(true);
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   const [videos, setVideos] = useState<any[]>([]);

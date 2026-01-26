@@ -29,7 +29,7 @@ interface Audio {
 }
 
 const AudioPortal: FunctionComponent = () => {
-  const { Navbar } = useNavbar();
+  const { Navbar } = useNavbar(true);
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   const navigate = useNavigate();

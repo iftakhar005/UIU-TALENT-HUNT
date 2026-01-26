@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import styles from '../styles/HomePage.module.css';
 import { useNavigate } from 'react-router-dom';
 
-export default function useNavbar() {
+export default function useNavbar(showSearch: boolean = false) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -106,14 +106,20 @@ export default function useNavbar() {
           <img src="/school.svg" alt="UIU Logo" className={styles.logo} />
           <b>UIU Talent Hunt</b>
         </div>
-        <div className={styles.input}>
-          <input
-            type="text"
-            placeholder="Search entries..."
-            className={styles.searchEntries}
-          />
-          <span className={`material-icons ${styles.search}`}>search</span>
-        </div>
+        {showSearch && (
+          <div className={styles.input}>
+            <input
+              type="text"
+              placeholder="Search entries..."
+              className={styles.searchEntries}
+            />
+            <span className={`material-icons ${styles.search}`}>search</span>
+          </div>
+        )}
+        
+        {/* Spacer to push items to the right when search is hidden */}
+        {!showSearch && <div style={{ flex: 1 }} />}
+        
         <button className={styles.leaderboardBtn} onClick={() => navigate('/leaderboard')}>
           <span className="material-icons">leaderboard</span>
           Leaderboard
