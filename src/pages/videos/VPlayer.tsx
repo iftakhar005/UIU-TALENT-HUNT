@@ -117,6 +117,7 @@ const VPlayer = () => {
   const [downvoteCount, setDownvoteCount] = useState(0);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const viewCountedRef = useRef(false);
+  const viewCountTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -325,7 +326,19 @@ const VPlayer = () => {
   // Reset view counted when video changes
   useEffect(() => {
     viewCountedRef.current = false;
+    // Clear any pending view count timeout
+    if (viewCountTimeoutRef.current) {
+      clearTimeout(viewCountTimeoutRef.current);
+      viewCountTimeoutRef.current = null;
+    }
   }, [id]);
+
+  // Set initial volume when video loads
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume / 100;
+    }
+  }, [volume]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -478,49 +491,67 @@ const VPlayer = () => {
                       onLoadedMetadata={(e) => {
                         const video = e.currentTarget;
                         setDuration(video.duration);
+                        video.volume = 0.8; // Set initial volume to 80%
+                      }}
+                      onVolumeChange={(e) => {
+                        const video = e.currentTarget;
+                        setVolume(Math.round(video.volume * 100));
                       }}
                       onTimeUpdate={(e) => {
                         const video = e.currentTarget;
                         setCurrentTime(video.currentTime);
                       }}
-                      onPlay={async () => {
+                      onPlay={() => {
                         setIsPlaying(true);
-                        // Increment view count only once when video starts playing for the first time
-                        if (!viewCountedRef.current && id && videoData) {
-                          try {
-                            const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
-                            const endpoint = `${apiUrl}/videos/${id}/view`;
-                            console.log('📤 Incrementing view at endpoint:', endpoint);
+                        // Increment view count after 3 seconds of continuous playback
+                        if (!viewCountedRef.current && !viewCountTimeoutRef.current && id && videoData) {
+                          console.log('⏱️ Starting 3-second timer for view count...');
+                          viewCountTimeoutRef.current = setTimeout(async () => {
+                            try {
+                              const apiUrl = import.meta.env.VITE_API_URL || 'https://uiu-talent-hunt-backend.onrender.com/api';
+                              const endpoint = `${apiUrl}/videos/${id}/view`;
+                              console.log('📤 Incrementing view at endpoint:', endpoint);
 
-                            const response = await fetch(endpoint, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' }
-                            });
+                              const response = await fetch(endpoint, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' }
+                              });
 
-                            if (!response.ok) {
-                              const errorData = await response.json().catch(() => ({}));
-                              console.error('❌ View increment failed with status', response.status, ':', errorData);
-                              throw new Error(`Failed to increment view: ${response.status}`);
+                              if (!response.ok) {
+                                const errorData = await response.json().catch(() => ({}));
+                                console.error('❌ View increment failed with status', response.status, ':', errorData);
+                                throw new Error(`Failed to increment view: ${response.status}`);
+                              }
+
+                              const data = await response.json();
+                              console.log('✅ View counted for video:', id, 'New view count:', data.views);
+                              viewCountedRef.current = true;
+                              viewCountTimeoutRef.current = null;
+
+                              // Update local state to reflect new view count immediately in UI
+                              setVideoData(prev => {
+                                if (!prev) return prev;
+                                return {
+                                  ...prev,
+                                  views: `${data.views?.toLocaleString() || (parseInt(prev.views.replace(/,/g, '')) + 1).toLocaleString()}`
+                                };
+                              });
+                            } catch (error) {
+                              console.error('❌ Error incrementing view:', error);
+                              viewCountTimeoutRef.current = null;
                             }
-
-                            const data = await response.json();
-                            console.log('✅ View counted for video:', id, 'New view count:', data.views);
-                            viewCountedRef.current = true;
-
-                            // Update local state to reflect new view count immediately in UI
-                            setVideoData(prev => {
-                              if (!prev) return prev;
-                              return {
-                                ...prev,
-                                views: `${data.views?.toLocaleString() || (parseInt(prev.views.replace(/,/g, '')) + 1).toLocaleString()}`
-                              };
-                            });
-                          } catch (error) {
-                            console.error('❌ Error incrementing view:', error);
-                          }
+                          }, 3000); // 3 seconds delay
                         }
                       }}
-                      onPause={() => setIsPlaying(false)}
+                      onPause={() => {
+                        setIsPlaying(false);
+                        // Cancel view count if user pauses before 3 seconds
+                        if (viewCountTimeoutRef.current && !viewCountedRef.current) {
+                          console.log('⏸️ Paused before 3 seconds - view not counted');
+                          clearTimeout(viewCountTimeoutRef.current);
+                          viewCountTimeoutRef.current = null;
+                        }
+                      }}
                     />
                   ) : (
                     <div className={styles.videoOverlay} />
@@ -535,59 +566,7 @@ const VPlayer = () => {
                     </button>
                   )}
 
-                  {/* Cast Button */}
-                  <button className={styles.castButton}>
-                    <span className="material-icons">cast</span>
-                    <span>Cast</span>
-                  </button>
 
-                  {/* Video Controls */}
-                  <div className={styles.videoControls}>
-                    <span className={styles.timeDisplay}>{formatTime(currentTime)}</span>
-
-                    <div className={styles.progressBar} onClick={handleProgressClick}>
-                      <div
-                        className={styles.progressFill}
-                        style={{ width: `${(currentTime / duration) * 100}%` }}
-                      />
-                      <div
-                        className={styles.progressHandle}
-                        style={{ left: `${(currentTime / duration) * 100}%` }}
-                      />
-                    </div>
-
-                    <span className={styles.timeDisplay}>{formatTime(duration)}</span>
-
-                    {/* Volume Control */}
-                    <div
-                      className={styles.volumeControl}
-                      onMouseEnter={() => setShowVolumeSlider(true)}
-                      onMouseLeave={() => setShowVolumeSlider(false)}
-                    >
-                      <button className={styles.controlButton}>
-                        <span className="material-icons">
-                          {volume === 0 ? 'volume_off' : volume < 50 ? 'volume_down' : 'volume_up'}
-                        </span>
-                      </button>
-                      {showVolumeSlider && (
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={volume}
-                          onChange={(e) => setVolume(Number(e.target.value))}
-                          className={styles.volumeSlider}
-                        />
-                      )}
-                    </div>
-
-                    {/* Fullscreen */}
-                    <button className={styles.controlButton} onClick={handleFullscreen}>
-                      <span className="material-icons">
-                        {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
-                      </span>
-                    </button>
-                  </div>
                 </div>
               </div>
 
