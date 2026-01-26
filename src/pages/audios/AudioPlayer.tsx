@@ -62,49 +62,59 @@ const AudioPlayer = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const playCountTimeoutRef = useRef<number | null>(null);
 
-  // Track when audio starts playing and increment play count after 3 seconds
+  // Reset play counted when audio changes
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !id) return;
+    setPlayCounted(false);
+  }, [id]);
 
-    const handlePlay = () => {
-      if (!playCounted && !playCountTimeoutRef.current) {
-        // Wait 3 seconds before incrementing play count
-        playCountTimeoutRef.current = window.setTimeout(async () => {
-          try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-            await fetch(`${apiUrl}/audios/${id}/play`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
-            });
-            setPlayCounted(true);
-            console.log('\u2705 Play counted for audio:', id);
-          } catch (error) {
-            console.error('\u274c Error incrementing play:', error);
-          }
+  const handleAudioPlay = () => {
+    if (!playCounted && !playCountTimeoutRef.current && id) {
+      console.log('🎵 Audio play started, waiting 3 seconds...');
+      // Wait 3 seconds before incrementing play count
+      playCountTimeoutRef.current = window.setTimeout(async () => {
+        try {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+          console.log('📡 Sending play increment request to:', `${apiUrl}/audios/${id}/play`);
+          const response = await fetch(`${apiUrl}/audios/${id}/play`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const data = await response.json();
+          console.log('✅ Play counted for audio:', id, data);
+          
+          // Update the local state to reflect the new play count
+          setAudioData(prev => prev ? {
+            ...prev,
+            plays: (prev.plays || 0) + 1
+          } : null);
+          
+          setPlayCounted(true);
           playCountTimeoutRef.current = null;
-        }, 3000);
-      }
-    };
+        } catch (error) {
+          console.error('❌ Error incrementing play:', error);
+          playCountTimeoutRef.current = null;
+        }
+      }, 3000);
+    }
+  };
 
-    const handlePause = () => {
-      // Cancel the timeout if user pauses before 3 seconds
-      if (playCountTimeoutRef.current && !playCounted) {
-        clearTimeout(playCountTimeoutRef.current);
-        playCountTimeoutRef.current = null;
-      }
-    };
+  const handleAudioPause = () => {
+    // Cancel the timeout if user pauses before 3 seconds
+    if (playCountTimeoutRef.current && !playCounted) {
+      console.log('⏸️ Audio paused before 3 seconds, cancelling play count');
+      clearTimeout(playCountTimeoutRef.current);
+      playCountTimeoutRef.current = null;
+    }
+  };
 
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
+  // Cleanup timeout on unmount
+  useEffect(() => {
     return () => {
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
       if (playCountTimeoutRef.current) {
         clearTimeout(playCountTimeoutRef.current);
       }
     };
-  }, [id, playCounted]);
+  }, []);
 
   useEffect(() => {
     const fetchAudio = async () => {
@@ -143,11 +153,6 @@ const AudioPlayer = () => {
     };
 
     fetchAudio();
-  }, [id]);
-
-  // Reset play counted when audio changes
-  useEffect(() => {
-    setPlayCounted(false);
   }, [id]);
 
   const handleUpvote = async () => {
@@ -330,6 +335,8 @@ const AudioPlayer = () => {
             ref={audioRef}
             src={audioData.audioUrl}
             controls
+            onPlay={handleAudioPlay}
+            onPause={handleAudioPause}
             style={{
               width: '100%',
               outline: 'none'
