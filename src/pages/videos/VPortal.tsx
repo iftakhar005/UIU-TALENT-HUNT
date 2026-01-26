@@ -9,10 +9,18 @@ import { contentAPI } from '../../services/api';
 
 const VPortal: FunctionComponent = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const Navbar = useNavbar({
+    showSearch: true,
+    onSearch: setSearchQuery,
+    searchPlaceholder: "Search videos...",
+    searchValue: searchQuery
+  });
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   const [videos, setVideos] = useState<any[]>([]);
+  const [filteredVideos, setFilteredVideos] = useState<any[]>([]);
   const [trendingVideos, setTrendingVideos] = useState<any[]>([]);
   const [featuredVideo, setFeaturedVideo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -24,10 +32,10 @@ const VPortal: FunctionComponent = () => {
         console.log('📹 Fetching videos from API...');
         const response = await contentAPI.getAll({ type: 'video', limit: 50 });
         console.log('📹 Videos API Response:', response);
-        
+
         // Handle both 'content' and 'data' fields for backward compatibility
         const videosList = response.content || response.data || [];
-        
+
         if (response.success) {
           if (videosList.length > 0) {
             console.log(`✅ Loaded ${videosList.length} videos`);
@@ -72,6 +80,38 @@ const VPortal: FunctionComponent = () => {
     fetchVideos();
   }, []);
 
+  // Initialize filtered videos when videos load
+  useEffect(() => {
+    setFilteredVideos(videos);
+  }, [videos]);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Filter videos based on debounced search query
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
+      setFilteredVideos(videos);
+    } else {
+      const query = debouncedSearchQuery.toLowerCase();
+      const filtered = videos.filter(video =>
+        video.title?.toLowerCase().includes(query) ||
+        video.description?.toLowerCase().includes(query) ||
+        video.user?.fullName?.toLowerCase().includes(query) ||
+        video.user?.username?.toLowerCase().includes(query) ||
+        video.category?.toLowerCase().includes(query) ||
+        video.tags?.some((tag: string) => tag.toLowerCase().includes(query))
+      );
+      setFilteredVideos(filtered);
+    }
+  }, [debouncedSearchQuery, videos]);
+
   const onVideoClick = useCallback((videoId: string) => {
     navigate(`/videos/${videoId}`);
   }, [navigate]);
@@ -107,7 +147,7 @@ const VPortal: FunctionComponent = () => {
     >
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', alignItems: 'center' }}>
         <div>
-          <div style={{ 
+          <div style={{
             display: 'inline-block',
             backgroundColor: '#fbbf24',
             color: '#000',
@@ -121,17 +161,17 @@ const VPortal: FunctionComponent = () => {
           }}>
             🏆 Featured Video
           </div>
-          <h2 style={{ 
-            fontSize: '36px', 
-            fontWeight: '700', 
+          <h2 style={{
+            fontSize: '36px',
+            fontWeight: '700',
             color: '#fff',
             marginBottom: '16px',
             lineHeight: '1.2'
           }}>
             {video.title}
           </h2>
-          <p style={{ 
-            fontSize: '16px', 
+          <p style={{
+            fontSize: '16px',
             color: 'rgba(255,255,255,0.9)',
             marginBottom: '24px',
             lineHeight: '1.6'
@@ -140,13 +180,17 @@ const VPortal: FunctionComponent = () => {
           </p>
           <div style={{ display: 'flex', gap: '24px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+              <span style={{ fontSize: '18px' }}>👍</span>
+              <span style={{ fontWeight: '600' }}>{video.upvotes || 0}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+              <span style={{ fontSize: '18px' }}>👎</span>
+              <span style={{ fontWeight: '600' }}>{video.downvotes || 0}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
               <span style={{ fontSize: '20px' }}>👁</span>
               <span style={{ fontWeight: '600' }}>{video.views || 0}</span>
               <span style={{ opacity: 0.8 }}>views</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
-              <span style={{ color: '#fbbf24', fontSize: '18px' }}>{renderStars(video.averageRating)}</span>
-              <span style={{ fontWeight: '600' }}>{video.averageRating ? video.averageRating.toFixed(1) : 'New'}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
               <span style={{ fontSize: '18px' }}>💬</span>
@@ -169,6 +213,17 @@ const VPortal: FunctionComponent = () => {
               <span>🎬 by</span>
               <span style={{ color: '#fbbf24' }}>@{video.user?.username || 'Unknown'}</span>
             </div>
+            {video.user?.department && (
+              <div style={{
+                backgroundColor: 'rgba(255,255,255,0.15)',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '14px'
+              }}>
+                📚 {video.user.department} • {video.user.currentTrimester} Trimester
+              </div>
+            )}
             {video.category && (
               <div style={{
                 backgroundColor: 'rgba(255,255,255,0.15)',
@@ -184,15 +239,15 @@ const VPortal: FunctionComponent = () => {
         </div>
         <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
           {video.thumbnailUrl ? (
-            <img 
-              src={video.thumbnailUrl} 
-              alt={video.title} 
+            <img
+              src={video.thumbnailUrl}
+              alt={video.title}
               style={{ width: '100%', height: '350px', objectFit: 'cover' }}
             />
           ) : (
-            <div style={{ 
-              width: '100%', 
-              height: '350px', 
+            <div style={{
+              width: '100%',
+              height: '350px',
               background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
               display: 'flex',
               alignItems: 'center',
@@ -239,18 +294,27 @@ const VPortal: FunctionComponent = () => {
             <span className={styles.playIcon}>▶</span>
           </div>
         )}
-        {video.duration && (
+        {/* {video.duration && (
           <div className={styles.durationBadge}>{video.duration}</div>
-        )}
+        )} */}
       </div>
       <div className={styles.videoInfo}>
         <h3 className={styles.videoTitle}>{video.title}</h3>
         <p className={styles.videoDescription}>{video.description || ''}</p>
         <div className={styles.videoMeta}>
           <span>by <b>@{video.user?.username || 'Unknown'}</b></span>
+          {video.user?.department && <span> • {video.user.department} • {video.user.currentTrimester} Trimester</span>}
           {video.category && <span> • {video.category}</span>}
         </div>
         <div className={styles.videoStats}>
+          <div className={styles.stat}>
+            <span className={styles.statIcon}>👍</span>
+            <span>{video.upvotes || 0}</span>
+          </div>
+          <div className={styles.stat}>
+            <span className={styles.statIcon}>👎</span>
+            <span>{video.downvotes || 0}</span>
+          </div>
           <div className={styles.stat}>
             <span className={styles.statIcon}>👁</span>
             <span>{video.views || 0} views</span>
@@ -258,10 +322,6 @@ const VPortal: FunctionComponent = () => {
           <div className={styles.stat}>
             <span className={styles.statIcon}>💬</span>
             <span>{video.comments?.length || 0} comments</span>
-          </div>
-          <div className={styles.stat}>
-            <span className={styles.statIcon} style={{ color: '#fbbf24', fontSize: '16px' }}>{renderStars(video.averageRating)}</span>
-            <span>{video.averageRating ? `${video.averageRating.toFixed(1)} rating` : 'No ratings'}</span>
           </div>
         </div>
         {video.tags && video.tags.length > 0 && (
@@ -277,9 +337,9 @@ const VPortal: FunctionComponent = () => {
 
   return (
     <>
-      <Navbar />
+      {Navbar}
+      <TabNavigation />
       <div className={styles.vPortal}>
-        <TabNavigation />
         <div className={styles.main}>
           <div className={styles.header}>
             <h1 className={styles.pageTitle}>Video Portal</h1>
@@ -294,15 +354,19 @@ const VPortal: FunctionComponent = () => {
           {/* All Videos Section */}
           <div className={styles.allVideosSection}>
             <h2 className={styles.sectionTitle}>
-              <span className={styles.allVideosBadge}>All Videos</span>
+              <span className={styles.allVideosBadge}>
+                {searchQuery ? `Search Results (${filteredVideos.length})` : 'All Videos'}
+              </span>
             </h2>
             {loading ? (
               <div className={styles.loading}>Loading videos...</div>
-            ) : videos.length === 0 ? (
+            ) : searchQuery && filteredVideos.length === 0 ? (
+              <div className={styles.emptyState}>No videos found matching "{searchQuery}"</div>
+            ) : filteredVideos.length === 0 ? (
               <div className={styles.emptyState}>No videos available yet. Be the first to submit one!</div>
             ) : (
               <div className={styles.videoGrid}>
-                {videos.map((video) => renderVideoCard(video, false))}
+                {filteredVideos.map((video) => renderVideoCard(video, false))}
               </div>
             )}
           </div>

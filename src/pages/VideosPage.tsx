@@ -22,7 +22,7 @@ interface Video {
 }
 
 export default function VideosPage() {
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
 
@@ -79,7 +79,7 @@ export default function VideosPage() {
 
   return (
     <div className="min-h-screen w-full bg-slate-50 text-gray-900">
-      <Navbar />
+      {Navbar}
       <TabNavigation />
 
       {/* Video Player Section */}
@@ -90,7 +90,6 @@ export default function VideosPage() {
             <video
               src={selectedVideo.videoUrl}
               controls
-              autoPlay
               className="h-full w-full bg-black"
               poster={selectedVideo.thumbnailUrl}
               onPlay={() => handleVideoPlay(selectedVideo._id)}

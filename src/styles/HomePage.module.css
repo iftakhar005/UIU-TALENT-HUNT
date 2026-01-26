@@ -347,7 +347,7 @@
     0px 8px 10px -6px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   background-color: #fff;
-  padding: 40px 30px;
+  padding: 60px 30px 40px;
   width: 100%;
   box-sizing: border-box;
   margin: -100px auto 0;
@@ -683,5 +683,89 @@
   .heading23 {
     font-size: 18px;
     padding: 10px 15px;
+  }
+}
+
+/* Home Page Tabs */
+.homeTabContainer {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 40px;
+  padding: 0 20px;
+  flex-wrap: wrap;
+}
+
+.homeTab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.homeTab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-color: #d1d5db;
+}
+
+.tabIcon {
+  font-size: 1.2em;
+}
+
+.activeVideoTab {
+  background: linear-gradient(90deg, #f97316, #fbbf24);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.activeAudioTab {
+  background: linear-gradient(90deg, #3b82f6, #0ea5e9);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.activeBlogTab {
+  background: linear-gradient(90deg, #22c55e, #10b981);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.tabContent {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .homeTab {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+
+  .homeTabContainer {
+    gap: 8px;
   }
 }

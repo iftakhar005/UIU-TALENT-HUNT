@@ -6,7 +6,7 @@ import styles from '../styles/SubmitEntry.module.css';
 
 const SubmitEntry = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
   const [selectedOption, setSelectedOption] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -35,15 +35,15 @@ const SubmitEntry = () => {
 
   return (
     <div className={styles.submitEntry}>
-      <Navbar />
-      
+      {Navbar}
+
       <div className={styles.mainContent}>
         <div className={styles.container}>
           <h1 className={styles.heading}>Submit Your Talent</h1>
           <p className={styles.subheading}>Choose the type of content you want to submit</p>
 
           <div className={styles.selectionBox}>
-            <div 
+            <div
               className={styles.selectButton}
               onClick={() => setIsOpen(!isOpen)}
             >
@@ -69,7 +69,7 @@ const SubmitEntry = () => {
             )}
           </div>
 
-          <button 
+          <button
             className={styles.nextButton}
             onClick={handleNext}
           >

@@ -12,6 +12,8 @@ const SignUp = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [studentId, setStudentId] = useState('');
+  const [department, setDepartment] = useState('');
+  const [currentTrimester, setCurrentTrimester] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -87,6 +89,8 @@ const SignUp = () => {
         password,
         fullName: fullName.trim(),
         studentId: studentId.trim() || undefined,
+        department: department || undefined,
+        currentTrimester: currentTrimester || undefined,
       });
 
       // Move to verification step
@@ -98,7 +102,7 @@ const SignUp = () => {
     } finally {
       setLoading(false);
     }
-  }, [fullName, email, studentId, password, confirmPassword]);
+  }, [fullName, email, studentId, department, currentTrimester, password, confirmPassword]);
 
   // Step 2: Verify code and complete registration
   const handleVerifyCode = useCallback(async () => {
@@ -337,6 +341,49 @@ const SignUp = () => {
             }
           }}
         />
+        <select
+          className={styles.input3}
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !loading) {
+              handleSendVerification();
+            }
+          }}
+        >
+          <option value="">Select Department</option>
+          <option value="CSE">Department of CSE</option>
+          <option value="EE">Department of EE</option>
+          <option value="Pharmacy">Department of Pharmacy</option>
+          <option value="Civil">Department of Civil</option>
+          <option value="BBA">Department of BBA</option>
+          <option value="Nursing">Department of Nursing</option>
+          <option value="Architecture">Department of Architecture</option>
+        </select>
+        <select
+          className={styles.input3}
+          value={currentTrimester}
+          onChange={(e) => setCurrentTrimester(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !loading) {
+              handleSendVerification();
+            }
+          }}
+        >
+          <option value="">Select Current Trimester</option>
+          <option value="1st">1st Trimester</option>
+          <option value="2nd">2nd Trimester</option>
+          <option value="3rd">3rd Trimester</option>
+          <option value="4th">4th Trimester</option>
+          <option value="5th">5th Trimester</option>
+          <option value="6th">6th Trimester</option>
+          <option value="7th">7th Trimester</option>
+          <option value="8th">8th Trimester</option>
+             <option value="9th">9th Trimester</option>
+                <option value="10th">10th Trimester</option>
+                   <option value="11th">11th Trimester</option>
+                      <option value="12th">12th Trimester</option>
+        </select>
         <div className={styles.input4}>
           <input
             type={showPassword ? 'text' : 'password'}

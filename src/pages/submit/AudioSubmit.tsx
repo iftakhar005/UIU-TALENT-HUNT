@@ -8,7 +8,7 @@ import { submissionAPI, CONTENT_CATEGORIES, type ContentCategory } from '../../s
 
 const AudioSubmit: FunctionComponent = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
 
   // Form state
@@ -38,7 +38,7 @@ const AudioSubmit: FunctionComponent = () => {
 
   const onSubmitClick = useCallback(async () => {
     setError('');
-    
+
     // Validate form
     if (!title.trim()) {
       setError('Please provide a title for your audio track.');
@@ -95,7 +95,7 @@ const AudioSubmit: FunctionComponent = () => {
 
   return (
     <>
-      <Navbar />
+      {Navbar}
       <div className={styles.aSubmit}>
         <div className={styles.main}>
           <div className={styles.paragraph}>
@@ -104,12 +104,12 @@ const AudioSubmit: FunctionComponent = () => {
           </div>
 
           {error && (
-            <div style={{ 
-              background: '#fee2e2', 
-              color: '#dc2626', 
-              padding: '12px 16px', 
-              borderRadius: '8px', 
-              marginBottom: '16px' 
+            <div style={{
+              background: '#fee2e2',
+              color: '#dc2626',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              marginBottom: '16px'
             }}>
               {error}
             </div>
@@ -264,8 +264,8 @@ const AudioSubmit: FunctionComponent = () => {
             </div>
           </div>
 
-          <div 
-            className={styles.button9} 
+          <div
+            className={styles.button9}
             onClick={onSubmitClick}
             style={{ opacity: isSubmitting ? 0.7 : 1, pointerEvents: isSubmitting ? 'none' : 'auto' }}
           >

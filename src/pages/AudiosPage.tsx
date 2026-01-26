@@ -22,7 +22,7 @@ interface Audio {
 }
 
 export default function AudiosPage() {
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
 
@@ -69,7 +69,7 @@ export default function AudiosPage() {
 
   return (
     <div className="min-h-screen w-full bg-slate-50 text-gray-900">
-      <Navbar />
+      {Navbar}
       <TabNavigation />
 
       {/* Audio Player Section */}

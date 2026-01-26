@@ -1,0 +1,408 @@
+.settingsContainer {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.heading {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.subheading {
+  font-size: 16px;
+  color: #64748b;
+}
+
+.tabs {
+  display: flex;
+  gap: 16px;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 15px;
+}
+
+.tab:hover {
+  color: #1e293b;
+}
+
+.tab.active {
+  color: #ff8a3c;
+  border-bottom-color: #ff8a3c;
+}
+
+/* Settings Form Styles */
+.settingsForm {
+  background: white;
+  padding: 32px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.formGroup:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+  background-color: #f8fafc;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: all 0.2s;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: #ff8a3c;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 138, 60, 0.1);
+}
+
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.input:disabled,
+.textarea:disabled {
+  background-color: #f1f5f9;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+  justify-content: flex-end;
+}
+
+.button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.primaryButton {
+  background-color: #ff8a3c;
+  color: white;
+}
+
+.primaryButton:hover {
+  background-color: #e67e2f;
+}
+
+.primaryButton:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  background-color: transparent;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.secondaryButton:hover {
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+.messageBox {
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.successMessage {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #6ee7b7;
+}
+
+.errorMessage {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.loadingMessage {
+  background-color: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+/* Submissions Section */
+.submissionsGrid {
+  display: grid;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.submissionCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+}
+
+.submissionCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.submissionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.submissionTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  flex: 1;
+  word-break: break-word;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+  margin-left: 12px;
+}
+
+.statusPending {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.statusApproved {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.statusRejected {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.submissionDescription {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.submissionMeta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.metaItem {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.metaLabel {
+  font-weight: 600;
+  color: #475569;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.submissionActions {
+  display: flex;
+  gap: 12px;
+}
+
+.actionButton {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editButton {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.editButton:hover {
+  background-color: #bfdbfe;
+}
+
+.deleteButton {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.deleteButton:hover {
+  background-color: #fecaca;
+}
+
+.viewButton {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+}
+
+.viewButton:hover {
+  background-color: #e9d5ff;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 24px;
+  color: #94a3b8;
+}
+
+.emptyStateIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.emptyStateText {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.emptyStateSubtext {
+  font-size: 14px;
+  color: #cbd5e1;
+}
+
+.loadingContainer {
+  text-align: center;
+  padding: 60px 24px;
+  color: #64748b;
+}
+
+.errorContainer {
+  background-color: #fef2f2;
+  color: #dc2626;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #fca5a5;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 0 16px;
+  }
+
+  .heading {
+    font-size: 24px;
+  }
+
+  .settingsForm {
+    padding: 20px;
+  }
+
+  .buttonGroup {
+    flex-direction: column-reverse;
+  }
+
+  .tabs {
+    flex-direction: column;
+  }
+
+  .tab {
+    border-bottom: none;
+    border-left: 3px solid transparent;
+    padding-left: 16px;
+  }
+
+  .tab.active {
+    border-bottom-color: transparent;
+    border-left-color: #ff8a3c;
+  }
+
+  .submissionHeader {
+    flex-direction: column;
+  }
+
+  .statusBadge {
+    margin-left: 0;
+    margin-top: 12px;
+  }
+
+  .submissionMeta {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .submissionActions {
+    flex-direction: column;
+  }
+
+  .actionButton {
+    width: 100%;
+  }
+}

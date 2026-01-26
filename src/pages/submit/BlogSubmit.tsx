@@ -8,7 +8,7 @@ import { submissionAPI, CONTENT_CATEGORIES, type ContentCategory } from '../../s
 
 const BlogSubmit: FunctionComponent = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const Navbar = useNavbar();
   const { Footer } = useFooter();
 
   // Form state
@@ -26,7 +26,7 @@ const BlogSubmit: FunctionComponent = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-    
+
     if (!token || !user) {
       setError('You must be logged in to submit a blog. Redirecting to login...');
       setTimeout(() => navigate('/login'), 2000);
@@ -52,7 +52,7 @@ const BlogSubmit: FunctionComponent = () => {
 
   const onSubmitClick = useCallback(async () => {
     setError('');
-    
+
     // Check authentication first
     const token = localStorage.getItem('token');
     if (!token) {
@@ -60,7 +60,7 @@ const BlogSubmit: FunctionComponent = () => {
       setTimeout(() => navigate('/login'), 2000);
       return;
     }
-    
+
     // Validate form
     if (!title.trim()) {
       setError('Please provide a title for your blog.');
@@ -90,7 +90,7 @@ const BlogSubmit: FunctionComponent = () => {
     } catch (err) {
       console.error('❌ Blog submission error:', err);
       let errorMessage = 'Failed to submit blog';
-      
+
       if (err instanceof Error) {
         errorMessage = err.message;
         // Check for authentication errors
@@ -102,7 +102,7 @@ const BlogSubmit: FunctionComponent = () => {
           setTimeout(() => navigate('/login'), 2000);
         }
       }
-      
+
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -131,7 +131,7 @@ const BlogSubmit: FunctionComponent = () => {
 
   return (
     <>
-      <Navbar />
+      {Navbar}
       <div className={styles.submitPage}>
         <div className={styles.container}>
           <div className={styles.header}>
@@ -263,14 +263,14 @@ const BlogSubmit: FunctionComponent = () => {
           </div>
 
           <div className={styles.buttonGroup}>
-            <button 
+            <button
               className={styles.draftButton}
               onClick={onSaveDraftClick}
               disabled={isSubmitting}
             >
               Save as Draft
             </button>
-            <button 
+            <button
               className={styles.submitButton}
               onClick={onSubmitClick}
               disabled={isSubmitting}

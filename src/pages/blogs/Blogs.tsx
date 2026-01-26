@@ -14,6 +14,8 @@ interface Blog {
     username: string;
     fullName: string;
     avatar?: string;
+    department?: string;
+    currentTrimester?: string;
   };
   coverImage?: string;
   tags?: string[];
@@ -23,10 +25,18 @@ interface Blog {
 
 const Blogs = () => {
   const navigate = useNavigate();
-  const { Navbar } = useNavbar();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const Navbar = useNavbar({
+    showSearch: true,
+    onSearch: setSearchQuery,
+    searchPlaceholder: "Search blogs...",
+    searchValue: searchQuery
+  });
   const { Footer } = useFooter();
   const { TabNavigation } = useTabNavigation();
   const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([]);
 
   // Fallback articles
   const fallbackArticles: Blog[] = [
@@ -80,6 +90,37 @@ const Blogs = () => {
     fetchBlogs();
   }, []);
 
+  // Initialize filtered blogs when blogs load
+  useEffect(() => {
+    setFilteredBlogs(blogs);
+  }, [blogs]);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Filter blogs based on debounced search query
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
+      setFilteredBlogs(blogs);
+    } else {
+      const query = debouncedSearchQuery.toLowerCase();
+      const filtered = blogs.filter(blog =>
+        blog.title?.toLowerCase().includes(query) ||
+        blog.content?.toLowerCase().includes(query) ||
+        blog.user?.fullName?.toLowerCase().includes(query) ||
+        blog.user?.username?.toLowerCase().includes(query) ||
+        blog.tags?.some(tag => tag.toLowerCase().includes(query))
+      );
+      setFilteredBlogs(filtered);
+    }
+  }, [debouncedSearchQuery, blogs]);
+
   const onArticleClick = useCallback((articleId: string | number) => {
     navigate(`/blogs/${articleId}`);
   }, [navigate]);
@@ -100,9 +141,9 @@ const Blogs = () => {
         {article.coverImageUrl ? (
           <img src={article.coverImageUrl} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <div style={{ 
-            width: '100%', 
-            height: '100%', 
+          <div style={{
+            width: '100%',
+            height: '100%',
             backgroundColor: '#e5edf8',
             display: 'flex',
             alignItems: 'center',
@@ -117,26 +158,16 @@ const Blogs = () => {
         <h3 className={styles.articleTitle}>{article.title}</h3>
         <p className={styles.articleDescription}>{truncateContent(article.content || article.description || '')}</p>
         <div className={styles.articleMeta}>
-          <span>by <b>{article.user?.fullName || article.author}</b> • {article.readTime || formatDate(article.createdAt)}</span>
+          <span>by <b>{article.user?.fullName || article.author}</b></span>
+          {article.user?.department && <span> • {article.user.department} • {article.user.currentTrimester} Trimester</span>}
+          <span> • {article.readTime || formatDate(article.createdAt)}</span>
         </div>
-        {article.averageRating > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-            <div style={{ color: '#fbbf24', fontSize: '16px' }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span key={star}>
-                  {star <= Math.round(article.averageRating) ? '★' : '☆'}
-                </span>
-              ))}
-            </div>
-            <span style={{ fontSize: '13px', color: '#6b7280' }}>
-              {article.averageRating.toFixed(1)} ({article.totalRatings})
-            </span>
-          </div>
-        )}
+
         <div className={styles.articleStats}>
+          {article.upvotes !== undefined && <div className={styles.stat}><span className={styles.statIcon}>👍</span><span className={styles.statText}>{article.upvotes || 0}</span></div>}
+          {article.downvotes !== undefined && <div className={styles.stat}><span className={styles.statIcon}>👎</span><span className={styles.statText}>{article.downvotes || 0}</span></div>}
           {article.views && <div className={styles.stat}><span className={styles.statIcon}>👁</span><span className={styles.statText}>{article.views} views</span></div>}
-          {article.comments && <div className={styles.stat}><span className={styles.statIcon}>💬</span><span className={styles.statText}>{article.comments} comments</span></div>}
-          {article.rating && <div className={styles.stat}><span className={styles.statIcon}>★</span><span className={styles.statText}>{article.rating} rating</span></div>}
+          {article.comments && <div className={styles.stat}><span className={styles.statIcon}>💬</span><span className={styles.statText}>{Array.isArray(article.comments) ? article.comments.length : 0} comments</span></div>}
         </div>
         <div className={styles.articleTags}>
           {(article.tags || []).map((tag: string, idx: number) => (
@@ -150,9 +181,9 @@ const Blogs = () => {
 
   return (
     <div className={styles.blogs}>
-      <Navbar />
+      {Navbar}
       <TabNavigation />
-      
+
       <div className={styles.headerSection}>
         <h1 className={styles.pageTitle}>Blog Portal</h1>
         <p className={styles.pageDescription}>
@@ -161,9 +192,20 @@ const Blogs = () => {
       </div>
 
       <div className={styles.mainContent}>
-        <div className={styles.articleGrid}>
-          {blogs.map((article) => renderArticleCard(article))}
-        </div>
+        {searchQuery && (
+          <h3 style={{ marginBottom: '20px', color: '#6b7280' }}>
+            {filteredBlogs.length} {filteredBlogs.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+          </h3>
+        )}
+        {filteredBlogs.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6b7280' }}>
+            {searchQuery ? `No blogs found matching "${searchQuery}"` : 'No blogs available yet.'}
+          </div>
+        ) : (
+          <div className={styles.articleGrid}>
+            {filteredBlogs.map((article) => renderArticleCard(article))}
+          </div>
+        )}
       </div>
 
       <Footer />
