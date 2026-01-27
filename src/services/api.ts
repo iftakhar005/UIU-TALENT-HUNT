@@ -104,7 +104,7 @@ export interface AdminContentRequest extends ContentSubmission {
 
 export const CONTENT_CATEGORIES = [
   'music',
-  'dance', 
+  'dance',
   'drama',
   'poetry',
   'art',
@@ -119,7 +119,7 @@ export type ContentCategory = typeof CONTENT_CATEGORIES[number];
 // Helper function for API calls
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('token');
-  
+
   const config: RequestInit = {
     ...options,
     headers: {
@@ -131,7 +131,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
-    
+
     // Try to parse JSON, but handle non-JSON responses
     let data;
     try {
@@ -160,11 +160,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 // Helper for FormData requests (file uploads)
 async function uploadRequest<T>(endpoint: string, formData: FormData): Promise<T> {
   const token = localStorage.getItem('token');
-  
+
   if (!token) {
     throw new Error('Not authorized. Please login.');
   }
-  
+
   try {
     console.log('📤 Uploading to:', `${API_URL}${endpoint}`);
     const response = await fetch(`${API_URL}${endpoint}`, {
@@ -175,7 +175,7 @@ async function uploadRequest<T>(endpoint: string, formData: FormData): Promise<T
       },
       body: formData,
     });
-    
+
     // Try to parse JSON, but handle non-JSON responses
     let data;
     try {
@@ -264,6 +264,22 @@ export const authAPI = {
     });
   },
 
+  // Forgot password - Step 1: Request code
+  forgotPassword: async (email: string): Promise<{ success: boolean; message: string }> => {
+    return request('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  // Forgot password - Step 2: Reset with code
+  resetPassword: async (data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> => {
+    return request('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
   // Logout (client-side only)
   logout: () => {
     localStorage.removeItem('token');
@@ -307,7 +323,7 @@ export const contentAPI = {
     if (params?.category) searchParams.append('category', params.category);
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
-    
+
     return request<{ success: boolean; content: PublishedContent[]; pagination: Pagination }>(`/content?${searchParams}`);
   },
 
@@ -340,7 +356,7 @@ export const submissionAPI = {
     formData.append('description', data.description);
     formData.append('category', data.category);
     if (data.tags) formData.append('tags', data.tags);
-    
+
     return uploadRequest<{ success: boolean; message: string; request: { id: string; title: string; status: string; submittedAt: string } }>(
       '/content/submit/video',
       formData
@@ -363,7 +379,7 @@ export const submissionAPI = {
     formData.append('description', data.description);
     formData.append('category', data.category);
     if (data.tags) formData.append('tags', data.tags);
-    
+
     return uploadRequest<{ success: boolean; message: string; request: { id: string; title: string; status: string; submittedAt: string } }>(
       '/content/submit/audio',
       formData
@@ -386,7 +402,7 @@ export const submissionAPI = {
     formData.append('category', data.category);
     if (data.tags) formData.append('tags', data.tags);
     formData.append('blogContent', data.blogContent);
-    
+
     return uploadRequest<{ success: boolean; message: string; request: { id: string; title: string; status: string; submittedAt: string } }>(
       '/content/submit/blog',
       formData
@@ -400,7 +416,7 @@ export const submissionAPI = {
     if (params?.contentType) searchParams.append('contentType', params.contentType);
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
-    
+
     return request<{ success: boolean; submissions: ContentSubmission[]; pagination: Pagination }>(
       `/content/my-submissions?${searchParams}`
     );
@@ -430,7 +446,7 @@ export const adminAPI = {
     if (params?.contentType) searchParams.append('contentType', params.contentType);
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
-    
+
     return request<{ success: boolean; requests: AdminContentRequest[]; stats: ContentStats; pagination: Pagination }>(
       `/admin/content/pending?${searchParams}`
     );
@@ -443,7 +459,7 @@ export const adminAPI = {
     if (params?.contentType) searchParams.append('contentType', params.contentType);
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
-    
+
     return request<{ success: boolean; requests: AdminContentRequest[]; pagination: Pagination }>(
       `/admin/content/all?${searchParams}`
     );
@@ -475,6 +491,30 @@ export const adminAPI = {
     return request<{ success: boolean; message: string }>(`/admin/content/request/${id}`, {
       method: 'DELETE',
       body: JSON.stringify({ deleteMedia }),
+    });
+  },
+
+  // ==========================================
+  // ADMIN USER MANAGEMENT
+  // ==========================================
+
+  // Get all users
+  getUsers: async () => {
+    return request<{ success: boolean; users: User[] }>('/admin/users');
+  },
+
+  // Update user role
+  updateUserRole: async (userId: string, role: 'user' | 'admin' | 'judge') => {
+    return request<{ success: boolean; message: string; user: User }>(`/admin/users/${userId}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    });
+  },
+
+  // Delete user
+  deleteUser: async (userId: string) => {
+    return request<{ success: boolean; message: string }>(`/admin/users/${userId}`, {
+      method: 'DELETE',
     });
   },
 };

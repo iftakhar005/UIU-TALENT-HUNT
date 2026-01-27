@@ -17,6 +17,7 @@ import ProfilePage from './pages/profile/Profile';
 import Settings from './pages/Settings';
 import Admin from './pages/Admin';
 import Leaderboard from './pages/leaderboard/Leaderboard';
+import ForgotPassword from './pages/forgot-password/ForgotPassword';
 import './App.css';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/admin" element={<Admin />} />

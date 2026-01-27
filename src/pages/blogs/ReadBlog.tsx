@@ -238,7 +238,7 @@ const ReadBlog = () => {
             <span className={styles.category}>{blog.category}</span>
             <h1 className={styles.title}>{blog.title}</h1>
             <p className={styles.meta}>
-              By {blog.user.fullName} • Published on {formatDate(blog.createdAt)} • {blog.readingTime || 5} min read
+              By {blog.user?.fullName || blog.user?.username || 'Unknown Author'} • Published on {formatDate(blog.createdAt)} • {blog.readingTime || 5} min read
             </p>
 
             {/* Upvote/Downvote */}
@@ -303,14 +303,14 @@ const ReadBlog = () => {
           {/* Author Box */}
           <div className={styles.authorBox}>
             <img
-              src={blog.user.avatar || 'https://via.placeholder.com/56x56'}
-              alt={blog.user.fullName}
+              src={blog.user?.avatar || 'https://via.placeholder.com/56x56'}
+              alt={blog.user?.fullName || 'Author'}
               className={styles.authorAvatar}
             />
             <div className={styles.authorInfo}>
               <p className={styles.authorLabel}>WRITTEN BY</p>
-              <h3 className={styles.authorName}>{blog.user.fullName}</h3>
-              <p className={styles.authorBio}>{blog.user.bio || 'UIU Talent Hunt contributor'}</p>
+              <h3 className={styles.authorName}>{blog.user?.fullName || 'Unknown Author'}</h3>
+              <p className={styles.authorBio}>{blog.user?.bio || 'UIU Talent Hunt contributor'}</p>
             </div>
           </div>
 
