@@ -2,7 +2,7 @@ import type { FunctionComponent } from 'react';
 import { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles/Admin.module.css';
-import { adminAPI } from '../services/api';
+import { adminAPI, type User } from '../services/api';
 
 interface ContentRequest {
   _id: string;
@@ -44,6 +44,7 @@ interface ContentRequest {
 const Admin: FunctionComponent = () => {
   const navigate = useNavigate();
   const [contentRequests, setContentRequests] = useState<ContentRequest[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('videos');
 
@@ -51,7 +52,7 @@ const Admin: FunctionComponent = () => {
     // Check if user is authenticated and is admin
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-    
+
     if (!token || !user) {
       console.warn('⚠️ No authentication found. Redirecting to login...');
       navigate('/login');
@@ -71,14 +72,64 @@ const Admin: FunctionComponent = () => {
       return;
     }
 
-    fetchPendingContent();
-  }, [navigate]);
+    if (activeSection === 'users') {
+      fetchUsers();
+    } else {
+      fetchPendingContent();
+    }
+  }, [navigate, activeSection]);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      console.log('👥 Fetching users...');
+      const data = await adminAPI.getUsers();
+      if (data.success) {
+        setUsers(data.users || []);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching users:', error);
+      alert('Failed to fetch users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRoleChange = async (userId: string, newRole: 'user' | 'admin' | 'judge') => {
+    try {
+      const data = await adminAPI.updateUserRole(userId, newRole);
+      if (data.success) {
+        setUsers(users.map(u => (u as any)._id === userId ? { ...u, role: newRole } : u));
+        alert(`✅ Role updated to ${newRole}`);
+      }
+    } catch (error) {
+      console.error('❌ Error updating role:', error);
+      alert('Failed to update role');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!window.confirm('Are you sure you want to permanently delete this user and all their pending requests? This cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const data = await adminAPI.deleteUser(userId);
+      if (data.success) {
+        setUsers(users.filter(u => (u as any)._id !== userId));
+        alert('✅ User deleted successfully');
+      }
+    } catch (error) {
+      console.error('❌ Error deleting user:', error);
+      alert('Failed to delete user');
+    }
+  };
 
   const fetchPendingContent = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         console.error('❌ No token found. Please log in.');
         alert('Please log in first');
@@ -88,14 +139,14 @@ const Admin: FunctionComponent = () => {
 
       console.log('📋 Fetching pending content...');
       const data = await adminAPI.getPending();
-      
+
       if (data.success) {
         console.log('✅ Loaded', data.requests?.length || 0, 'pending content requests');
         setContentRequests(data.requests || []);
       } else {
         console.error('❌ API returned success: false', data);
-        const errorMsg = typeof data === 'object' && data !== null && 'message' in data 
-          ? (data as any).message 
+        const errorMsg = typeof data === 'object' && data !== null && 'message' in data
+          ? (data as any).message
           : 'Failed to fetch content';
         alert('Error: ' + errorMsg);
       }
@@ -114,7 +165,7 @@ const Admin: FunctionComponent = () => {
       console.log('✅ Approving content:', contentId);
       const data = await adminAPI.approve(contentId);
       console.log('📋 Approve response:', data);
-      
+
       if (data.success) {
         setContentRequests(contentRequests.filter(c => c._id !== contentId));
         alert('✅ Content approved successfully');
@@ -132,7 +183,7 @@ const Admin: FunctionComponent = () => {
         stack: error instanceof Error ? error.stack : undefined,
         error: error
       });
-      
+
       let errorMessage = 'Failed to approve content';
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -141,7 +192,7 @@ const Admin: FunctionComponent = () => {
           errorMessage = 'Network error - check if backend is running and accessible';
         }
       }
-      
+
       alert('Error approving content: ' + errorMessage);
     }
   };
@@ -153,7 +204,7 @@ const Admin: FunctionComponent = () => {
     try {
       console.log('❌ Rejecting content:', contentId);
       const data = await adminAPI.reject(contentId, reason);
-      
+
       if (data.success) {
         setContentRequests(contentRequests.filter(c => c._id !== contentId));
         alert('✅ Content rejected successfully');
@@ -375,14 +426,74 @@ const Admin: FunctionComponent = () => {
             </div>
           )}
 
-          {/* Users Section */}
           {activeSection === 'users' && (
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <h2>👥 User Management</h2>
                 <p>Manage users, permissions, and accounts</p>
               </div>
-              <div className={styles.emptyState}>User management features coming soon</div>
+
+              {loading ? (
+                <div className={styles.emptyState}>Loading users...</div>
+              ) : users.length === 0 ? (
+                <div className={styles.emptyState}>No users found</div>
+              ) : (
+                <div className={styles.userList}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((user: any) => (
+                        <tr key={user._id}>
+                          <td>
+                            <div className={styles.userInfo}>
+                              <div
+                                className={styles.userAvatarSmall}
+                                style={{
+                                  backgroundColor: user.role === 'admin' ? '#ef4444' : user.role === 'judge' ? '#3b82f6' : '#10b981'
+                                }}
+                              >
+                                {user.fullName ? user.fullName[0].toUpperCase() : user.username[0].toUpperCase()}
+                              </div>
+                              <div>
+                                <div className={styles.userName}>{user.fullName}</div>
+                                <div className={styles.userLogin}>@{user.username}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{user.email}</td>
+                          <td>
+                            <select
+                              className={styles.roleSelect}
+                              value={user.role}
+                              onChange={(e) => handleRoleChange(user._id, e.target.value as any)}
+                            >
+                              <option value="user">User</option>
+                              <option value="judge">Judge</option>
+                              <option value="admin">Admin</option>
+                            </select>
+                          </td>
+                          <td>
+                            <button
+                              className={styles.deleteActionBtn}
+                              onClick={() => handleDeleteUser(user._id)}
+                              title="Delete User"
+                            >
+                              🗑️
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>

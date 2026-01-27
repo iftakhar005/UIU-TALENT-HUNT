@@ -128,12 +128,12 @@ const Leaderboard: FunctionComponent = () => {
                                             className={styles.cardAvatar}
                                             style={{ background: 'linear-gradient(135deg, #cbd5e1, #94a3b8)' }}
                                         >
-                                            {topThree[1].user.fullName.charAt(0).toUpperCase()}
+                                            {(topThree[1].user?.fullName || topThree[1].user?.username || '?').charAt(0).toUpperCase()}
                                         </div>
-                                        <div className={styles.cardName}>{topThree[1].user.fullName}</div>
-                                        <div className={styles.cardHandle}>@{topThree[1].user.username}</div>
+                                        <div className={styles.cardName}>{topThree[1].user?.fullName || 'Unknown User'}</div>
+                                        <div className={styles.cardHandle}>@{topThree[1].user?.username || 'unknown'}</div>
                                         <div className={styles.cardInfo}>
-                                            📚 {topThree[1].user.department || 'N/A'} • {topThree[1].user.currentTrimester ? `${topThree[1].user.currentTrimester} Trimester` : 'N/A'}
+                                            📚 {topThree[1].user?.department || 'N/A'} • {topThree[1].user?.currentTrimester ? `${topThree[1].user.currentTrimester} Trimester` : 'N/A'}
                                         </div>
                                         <div className={styles.cardTitle}>{topThree[1].title}</div>
                                         <div className={styles.cardStats}>
@@ -151,12 +151,12 @@ const Leaderboard: FunctionComponent = () => {
                                             className={styles.cardAvatar}
                                             style={{ background: 'linear-gradient(135deg, #fcd34d, #f59e0b)' }}
                                         >
-                                            {topThree[0].user.fullName.charAt(0).toUpperCase()}
+                                            {(topThree[0].user?.fullName || topThree[0].user?.username || '?').charAt(0).toUpperCase()}
                                         </div>
-                                        <div className={styles.cardName}>{topThree[0].user.fullName}</div>
-                                        <div className={styles.cardHandle}>@{topThree[0].user.username}</div>
+                                        <div className={styles.cardName}>{topThree[0].user?.fullName || 'Unknown User'}</div>
+                                        <div className={styles.cardHandle}>@{topThree[0].user?.username || 'unknown'}</div>
                                         <div className={styles.cardInfo}>
-                                            📚 {topThree[0].user.department || 'N/A'} • {topThree[0].user.currentTrimester ? `${topThree[0].user.currentTrimester} Trimester` : 'N/A'}
+                                            📚 {topThree[0].user?.department || 'N/A'} • {topThree[0].user?.currentTrimester ? `${topThree[0].user.currentTrimester} Trimester` : 'N/A'}
                                         </div>
                                         <div className={styles.cardTitle}>{topThree[0].title}</div>
                                         <div className={styles.cardStats}>
@@ -174,12 +174,12 @@ const Leaderboard: FunctionComponent = () => {
                                             className={styles.cardAvatar}
                                             style={{ background: 'linear-gradient(135deg, #fdba74, #fb923c)' }}
                                         >
-                                            {topThree[2].user.fullName.charAt(0).toUpperCase()}
+                                            {(topThree[2].user?.fullName || topThree[2].user?.username || '?').charAt(0).toUpperCase()}
                                         </div>
-                                        <div className={styles.cardName}>{topThree[2].user.fullName}</div>
-                                        <div className={styles.cardHandle}>@{topThree[2].user.username}</div>
+                                        <div className={styles.cardName}>{topThree[2].user?.fullName || 'Unknown User'}</div>
+                                        <div className={styles.cardHandle}>@{topThree[2].user?.username || 'unknown'}</div>
                                         <div className={styles.cardInfo}>
-                                            📚 {topThree[2].user.department || 'N/A'} • {topThree[2].user.currentTrimester ? `${topThree[2].user.currentTrimester} Trimester` : 'N/A'}
+                                            📚 {topThree[2].user?.department || 'N/A'} • {topThree[2].user?.currentTrimester ? `${topThree[2].user.currentTrimester} Trimester` : 'N/A'}
                                         </div>
                                         <div className={styles.cardTitle}>{topThree[2].title}</div>
                                         <div className={styles.cardStats}>
@@ -213,10 +213,10 @@ const Leaderboard: FunctionComponent = () => {
                                             <div className={styles.row} key={entry._id}>
                                                 <div className={styles.data1}>#{index + 1}</div>
                                                 <div className={styles.data}>
-                                                    <b className={styles.eashaElehi}>{entry.user.fullName || entry.user.username}</b>
-                                                    <div className={styles.eashaelehi442}>@{entry.user.username}</div>
+                                                    <b className={styles.eashaElehi}>{entry.user?.fullName || entry.user?.username || 'Unknown User'}</b>
+                                                    <div className={styles.eashaelehi442}>@{entry.user?.username || 'unknown'}</div>
                                                     <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-                                                        {entry.user.department || 'N/A'} • {entry.user.currentTrimester ? `${entry.user.currentTrimester} Trimester` : 'N/A'}
+                                                        {entry.user?.department || 'N/A'} • {entry.user?.currentTrimester ? `${entry.user.currentTrimester} Trimester` : 'N/A'}
                                                     </div>
                                                 </div>
                                                 <div className={styles.data2} onClick={() => handleContentClick(entry)} style={{ cursor: 'pointer' }}>

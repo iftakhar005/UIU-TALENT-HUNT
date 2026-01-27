@@ -132,6 +132,11 @@ export default function LoginPage() {
     navigate("/");
   }, [navigate]);
 
+  const onForgotPasswordClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate("/forgot-password");
+  }, [navigate]);
+
   // Verification Code Screen
   if (requiresVerification && adminUser) {
     return (
@@ -293,9 +298,19 @@ export default function LoginPage() {
           )}
 
           {/* Forgot Password */}
-          <a href="#" className={styles.linkForgot}>
+          <button
+            onClick={onForgotPasswordClick}
+            className={styles.linkForgot}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              textAlign: 'left',
+              cursor: 'pointer'
+            }}
+          >
             Forgot Password?
-          </a>
+          </button>
 
           {/* Login Button */}
           <button

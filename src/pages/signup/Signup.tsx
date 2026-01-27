@@ -83,7 +83,7 @@ const SignUp = () => {
       // Generate username from email (before @)
       const username = email.split('@')[0];
 
-      await authAPI.sendVerification({
+      const response = await authAPI.sendVerification({
         email,
         username,
         password,
@@ -95,7 +95,7 @@ const SignUp = () => {
 
       // Move to verification step
       setStep('verify');
-      setSuccess('Verification code sent to your email!');
+      setSuccess(response.message || 'Verification code sent to your email!');
       setResendCooldown(60); // 60 seconds cooldown
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send verification code. Please try again.');
@@ -379,10 +379,10 @@ const SignUp = () => {
           <option value="6th">6th Trimester</option>
           <option value="7th">7th Trimester</option>
           <option value="8th">8th Trimester</option>
-             <option value="9th">9th Trimester</option>
-                <option value="10th">10th Trimester</option>
-                   <option value="11th">11th Trimester</option>
-                      <option value="12th">12th Trimester</option>
+          <option value="9th">9th Trimester</option>
+          <option value="10th">10th Trimester</option>
+          <option value="11th">11th Trimester</option>
+          <option value="12th">12th Trimester</option>
         </select>
         <div className={styles.input4}>
           <input

@@ -159,7 +159,7 @@ const Blogs = () => {
         <p className={styles.articleDescription}>{truncateContent(article.content || article.description || '')}</p>
         <div className={styles.articleMeta}>
           <span>by <b>{article.user?.fullName || article.author}</b></span>
-          {article.user?.department && <span> • {article.user.department} • {article.user.currentTrimester} Trimester</span>}
+          {article.user?.department && <span> • {article.user?.department} • {article.user?.currentTrimester} Trimester</span>}
           <span> • {article.readTime || formatDate(article.createdAt)}</span>
         </div>
 
